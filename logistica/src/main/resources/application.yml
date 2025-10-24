@@ -1,0 +1,71 @@
+# ----------------------------------------------------
+# 1. Información General y Puerto
+# ----------------------------------------------------
+server:
+  # Puerto interno del microservicio Logística
+  port: 8083
+
+spring:
+  application:
+    name: logistica
+
+  # ----------------------------------------------------
+  # 2. Configuración de la Base de Datos Compartida
+  # ----------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://postgres:5432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  # ----------------------------------------------------
+  # 3. Configuración de Seguridad OAuth2 (Keycloak)
+  # ----------------------------------------------------
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # REEMPLAZAR 'NOMBRE_REALM'
+          issuer-uri: http://keycloak:8080/realms/NOMBRE_REALM
+
+# ----------------------------------------------------
+# 4. Configuración de Swagger (springdoc)
+# ----------------------------------------------------
+springdoc:
+  swagger-ui:
+    # Ruta donde se accede a la documentación interactiva (ej: http://localhost:8083/swagger-ui.html)
+    path: /swagger-ui.html
+  # Título base para la documentación (aparece en la UI de Swagger)
+  info:
+    title: Servicio Logística API
+    description: API para la gestión de rutas y planificación logística.
+    version: 1.0.0
+
+# ----------------------------------------------------
+# 5. Propiedades Personalizadas (app: Google Maps)
+# ----------------------------------------------------
+app:
+  # Se utiliza una estructura anidada para organizar las configuraciones del servicio externo
+  google:
+    maps:
+      api-key: ${GOOGLE_MAPS_API_KEY:TU_CLAVE_AQUI}
+      distance-matrix-url: https://maps.googleapis.com/maps/api/distancematrix/json
+  # Configuración de URLs para otros microservicios
+  recursos:
+    base-url: http://recursos:8082/api
+  solicitudes:
+    base-url: http://solicitudes:8081/api
+
+# ----------------------------------------------------
+# 6. Endpoints de Actuator (Opcional)
+# ----------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info'

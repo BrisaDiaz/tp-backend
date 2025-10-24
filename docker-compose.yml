@@ -1,0 +1,145 @@
+version: '3.8' # Versión de Docker Compose
+services:
+  # -----------------------------------------------------------------
+  # 1. BASE DE DATOS COMPARTIDA (PostgreSQL)
+  # -----------------------------------------------------------------
+  postgres:
+    image: 'postgres:latest'
+    container_name: db_postgres
+    environment:
+      # Los mismos valores configurados en los 'application.yml' de los microservicios
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: secret
+    # Exponer el puerto 5432 solo internamente (o a la máquina local para inspección)
+    ports:
+      # '5432:5432' expone la DB a la máquina local (opcional, pero útil para DB tools)
+      - '5432:5432'
+    volumes:
+      # Volúmenes para persistir los datos de la DB
+      - db_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U myuser -d mydatabase']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------------
+  # 2. SERVIDOR DE IDENTIDAD (Keycloak)
+  # -----------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: auth_server
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: postgres:5432/keycloak
+      KC_DB_USERNAME: keycloakuser # Usuario para la DB de Keycloak (distinto al de negocio)
+      KC_DB_PASSWORD: keycloaksecret
+      KC_HOSTNAME: localhost:8080 # Importante para la URL del issuer (Si se accede desde fuera de Docker)
+      KC_PROXY: edge
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+    command: start --auto-build
+    ports:
+      # Puerto 8080 expuesto para la consola de Keycloak y el endpoint JWT
+      - '8180:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  # -----------------------------------------------------------------
+  # 3. MICROSERVICIO RECURSOS (Puerto interno: 8081)
+  # -----------------------------------------------------------------
+  recursos:
+    build:
+      context: ./recursos # Ruta al Dockerfile del servicio Recursos
+      dockerfile: Dockerfile
+    container_name: servicio_recursos
+    ports:
+      # Solo exponemos un puerto si es necesario para debug o si no hay Gateway (aquí no es necesario)
+      - '8081:8081'
+    environment:
+      # Se pueden añadir variables de entorno aquí si no están en application.yml
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    restart: on-failure
+
+  # -----------------------------------------------------------------
+  # 4. MICROSERVICIO SOLICITUDES (Puerto interno: 8082)
+  # -----------------------------------------------------------------
+  solicitudes:
+    build:
+      context: ./solicitudes # Ruta al Dockerfile del servicio Solicitudes
+      dockerfile: Dockerfile
+    container_name: servicio_solicitudes
+    ports:
+      - '8082:8082'
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    restart: on-failure
+
+  # -----------------------------------------------------------------
+  # 5. MICROSERVICIO LOGISTICA (Puerto interno: 8083)
+  # -----------------------------------------------------------------
+  logistica:
+    build:
+      context: ./logistica # Ruta al Dockerfile del servicio Logística
+      dockerfile: Dockerfile
+    container_name: servicio_logistica
+    ports:
+      - '8083:8083'
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # Inyectar la clave sensible para Google Maps
+      GOOGLE_MAPS_API_KEY: 'TU_CLAVE_DE_API_REAL'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    restart: on-failure
+
+  # -----------------------------------------------------------------
+  # 6. API GATEWAY (Punto de Entrada)
+  # -----------------------------------------------------------------
+  api-gateway:
+    build:
+      context: ./api-gateway # Ruta al Dockerfile del API Gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      # ¡ÚNICO PUERTO DE ACCESO EXTERNO! Mapea 8080 del host a 8080 del contenedor
+      - '8080:8080'
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      keycloak:
+        condition: service_started
+      # Asegura que los microservicios estén operativos antes de levantar el Gateway
+      recursos:
+        condition: service_started
+      solicitudes:
+        condition: service_started
+      logistica:
+        condition: service_started
+    restart: always
+
+# -----------------------------------------------------------------
+# 7. VOLUMENES
+# -----------------------------------------------------------------
+volumes:
+  # Volumen para asegurar que los datos de PostgreSQL persistan entre reinicios de Docker Compose
+  db_data:

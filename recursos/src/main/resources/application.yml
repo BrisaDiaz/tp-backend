@@ -1,0 +1,60 @@
+# ----------------------------------------------------
+# 1. Información General y Puerto
+# ----------------------------------------------------
+server:
+  port: 8081 # Puerto interno del microservicio Recursos
+
+spring:
+  application:
+    name: recursos
+
+  # ----------------------------------------------------
+  # 2. Configuración de la Base de Datos Compartida (PostgreSQL)
+  # ----------------------------------------------------
+  datasource:
+    # URL de conexión al contenedor 'postgres'
+    url: jdbc:postgresql://postgres:5432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+
+  # ----------------------------------------------------
+  # 3. Configuración JPA (Hibernate)
+  # ----------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # ----------------------------------------------------
+  # 4. Configuración de Seguridad OAuth2 (Resource Server / Keycloak)
+  # ----------------------------------------------------
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URI del emisor (Keycloak) - REEMPLAZAR 'NOMBRE_REALM'
+          issuer-uri: http://keycloak:8080/realms/NOMBRE_REALM
+
+# ----------------------------------------------------
+# 5. Configuración de Swagger (springdoc)
+# ----------------------------------------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  info:
+    title: Servicio Recursos API
+    description: API para la gestión de camiones y contenedores.
+    version: 1.0.0
+
+# ----------------------------------------------------
+# 6. Endpoints de Actuator (Opcional)
+# ----------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info'

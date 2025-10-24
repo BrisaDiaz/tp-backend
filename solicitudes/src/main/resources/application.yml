@@ -1,0 +1,69 @@
+# ----------------------------------------------------
+# 1. Información General y Puerto
+# ----------------------------------------------------
+server:
+  port: 8082 # Puerto interno del microservicio Solicitudes
+
+spring:
+  application:
+    name: solicitudes
+
+  # ----------------------------------------------------
+  # 2. Configuración de la Base de Datos Compartida (PostgreSQL)
+  # ----------------------------------------------------
+  datasource:
+    # URL de conexión al contenedor 'postgres'
+    url: jdbc:postgresql://postgres:5432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+
+  # ----------------------------------------------------
+  # 3. Configuración JPA (Hibernate)
+  # ----------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # ----------------------------------------------------
+  # 4. Configuración de Seguridad OAuth2 (Resource Server / Keycloak)
+  # ----------------------------------------------------
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URI del emisor (Keycloak) - REEMPLAZAR 'NOMBRE_REALM'
+          issuer-uri: http://keycloak:8080/realms/NOMBRE_REALM
+
+# ----------------------------------------------------
+# 5. Configuración de Swagger (springdoc)
+# ----------------------------------------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  info:
+    title: Servicio Solicitudes API
+    description: API para la gestión de solicitudes de transporte.
+    version: 1.0.0
+
+# ----------------------------------------------------
+# 6. Propiedades Personalizadas (Comunicación Interna)
+# ----------------------------------------------------
+# Opcional: Si Solicitudes necesita llamar a Recursos, se configura la URL interna aquí:
+app:
+  recursos:
+    # 'recursos' es el nombre del servicio en Docker Compose, 8081 su puerto interno
+    base-url: http://recursos:8081
+
+# ----------------------------------------------------
+# 7. Endpoints de Actuator (Opcional)
+# ----------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info'
