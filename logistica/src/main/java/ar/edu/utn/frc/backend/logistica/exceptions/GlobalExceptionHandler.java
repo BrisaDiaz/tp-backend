@@ -48,6 +48,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
+    // 500 INTERNAL SERVER ERROR (Recurso externo no disponible)
+    @ExceptionHandler(RecursoNoDisponibleException.class)
+    public ResponseEntity<ErrorResponse> handleRecursoNoDisponibleException(RecursoNoDisponibleException ex, HttpServletRequest request) {
+        String errorMessage = "Fallo al obtener un recurso externo vital. Por favor, intente más tarde o revise la disponibilidad del servicio.";
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error("External Service Error")
+                // Usamos el mensaje de la excepción personalizada, que ya es informativo
+                .message(ex.getMessage()) 
+                .path(request.getRequestURI())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
     // 400 BAD REQUEST (Errores de validación de DTO con @Valid en @RequestBody)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {

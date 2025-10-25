@@ -35,4 +35,3 @@ public class Contenedor {
     @JoinColumn(name = "estado_actual_id", nullable = false)
     private Estado estadoActual;
 }
-

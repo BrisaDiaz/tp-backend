@@ -196,6 +196,19 @@ public class SolicitudTransporteService {
             .map(this::mapearADto);
     }
 
+    // Buscar solicitudes por estado
+    public List<SolicitudTransporteDto> buscarPorEstado(String nombreEstado) {
+        List<SolicitudTransporte> solicitudes = solicitudRepository.findByEstadoNombre(nombreEstado);
+        return solicitudes.stream()
+                .map(this::mapearADto)
+                .toList();
+    }
+
+    // Bucar solicitudes en estado "Borrador"
+    public List<SolicitudTransporteDto> buscarBorradores() {
+        return buscarPorEstado(ESTADO_BORRADOR);
+    }
+
     private SolicitudTransporteDto mapearADto(SolicitudTransporte entity) {
         return SolicitudTransporteDto.builder()
                 .id(entity.getId())

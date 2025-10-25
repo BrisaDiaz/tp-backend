@@ -46,6 +46,14 @@ public class SolicitudTransporteController {
         return status(HttpStatus.CREATED).body(solicitudCreada);
     }
 
+    // Obtener solicitudes de transporte en estado "Borrador"
+    @GetMapping("/borrador")
+    public ResponseEntity<List<SolicitudTransporteDto>> buscarSolicitudesBorrador() {
+        List<SolicitudTransporteDto> solicitudesBorrador = solicitudTransporteService
+                .buscarBorradores();
+        return ResponseEntity.ok(solicitudesBorrador);
+    }
+
     // Actualizar una solicitud de transporte a estado "Programada"
     @PutMapping("/{id}/programada")
     public ResponseEntity<SolicitudTransporteDto> actualizarSolicitudAProgramada(

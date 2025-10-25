@@ -1,9 +1,10 @@
 package ar.edu.utn.frc.backend.logistica.restClient;
 
 import java.math.BigDecimal;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
 import ar.edu.utn.frc.backend.logistica.dto.helpers.CostoYTiempoDto;
 import ar.edu.utn.frc.backend.logistica.dto.helpers.InfoDepositoDto;
@@ -24,6 +25,17 @@ public class SolicitudesClient {
                 .uri(uri)
                 .retrieve()
                 .body(SolicitudTransporteDto.class);
+    }
+
+    // Obtener todas las solicitudes en estado "Borrador"
+    public List<SolicitudTransporteDto> getSolicitudesBorrador() {
+        String uri = "/solicitudes/borrador";
+
+        return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<SolicitudTransporteDto>>() {
+                });
     }
 
     // Actualizar la solicitud a programada

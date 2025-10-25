@@ -50,7 +50,7 @@ public class RecursosClient {
     }
 
     // Obtener el costo del combustible por litro
-    public BigDecimal getPrecioCombustible() {
+    public BigDecimal getCostoCombustiblePorLitro() {
         String uri = "/tarifas/combustible";
 
         return restClient.get()
@@ -60,7 +60,7 @@ public class RecursosClient {
     }
 
     // Obtener el cargo por gestión
-    public BigDecimal getCargoGestion() {
+    public BigDecimal getCargoPorGestion() {
         String uri = "/tarifas/gestion";
 
         return restClient.get()
