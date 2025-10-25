@@ -15,12 +15,12 @@ public class SolicitudTransporteDto {
     private Integer id;
     private LocalDate fechaSolicitud;
     private BigDecimal costoEstimado;
-    private BigDecimal tiempoEstimado;
+    private int tiempoEstimado;
     private BigDecimal costoReal;
-    private BigDecimal tiempoReal;
+    private int tiempoReal;
     private String estado;
     private Integer clienteId;
-    private Integer contenedorId;
+    private ContenedorDto contenedor;
     private DepositoDto depositoOrigen;
     private DepositoDto depositoDestino;
 }

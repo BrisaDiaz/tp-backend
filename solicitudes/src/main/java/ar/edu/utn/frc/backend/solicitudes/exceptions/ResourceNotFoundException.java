@@ -10,6 +10,10 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String resourceName, Integer id) {
         super(String.format("%s con ID %d no encontrado.", resourceName, id));
     }
+    // Constructor para buscar por descripción u otro campo
+    public ResourceNotFoundException(String resourceName, String decripcion) {
+        super(String.format("%s %s no encontrado.", resourceName, decripcion));
+    }
 
     // Constructor para mensajes específicos
     public ResourceNotFoundException(String message) {

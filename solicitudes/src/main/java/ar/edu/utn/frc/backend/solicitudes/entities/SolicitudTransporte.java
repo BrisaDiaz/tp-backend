@@ -36,13 +36,13 @@ public class SolicitudTransporte {
     private BigDecimal costoEstimado;
 
     @Column(name = "tiempo_estimado", nullable = true)
-    private BigDecimal tiempoEstimado;
+    private int tiempoEstimado; // en segundos
 
     @Column(name = "costo_real", nullable = true)
     private BigDecimal costoReal;
 
     @Column(name = "tiempo_real", nullable = true)
-    private BigDecimal tiempoReal;
+    private int tiempoReal; // en segundos
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_estado", nullable = false)
@@ -63,4 +63,38 @@ public class SolicitudTransporte {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_deposito_destino", nullable = false)
     private Deposito depositoDestino;
+
+    public String getTiempoEstimadoLegible(int tiempo) {
+        int segundos = tiempo;
+        int dias = segundos / 86400;
+        segundos %= 86400;
+        int horas = segundos / 3600;
+        segundos %= 3600;
+        int minutos = segundos / 60;
+        segundos %= 60;
+
+        StringBuilder tiempoLegible = new StringBuilder();
+        if (dias > 0) {
+            tiempoLegible.append(dias).append(" días ");
+        }
+        if (horas > 0) {
+            tiempoLegible.append(horas).append(" horas ");
+        }
+        if (minutos > 0) {
+            tiempoLegible.append(minutos).append(" minutos ");
+        }
+        if (segundos > 0 || tiempoLegible.length() == 0) {
+            tiempoLegible.append(segundos).append(" segundos");
+        }
+
+        return tiempoLegible.toString().trim();
+    }
+
+    public String getTiempoEstimadoLegible() {
+        return getTiempoEstimadoLegible(this.tiempoEstimado);
+    }
+
+    public String getTiempoRealLegible() {
+        return getTiempoEstimadoLegible(this.tiempoReal);
+    }
 }
