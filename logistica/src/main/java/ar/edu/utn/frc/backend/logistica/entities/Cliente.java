@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.solicitudes.entities;
+package ar.edu.utn.frc.backend.logistica.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

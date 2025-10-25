@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.solicitudes.entities;
+package ar.edu.utn.frc.backend.logistica.entities;
 
 import java.math.BigDecimal;
 
@@ -35,3 +35,4 @@ public class Contenedor {
     @JoinColumn(name = "estado_actual_id", nullable = false)
     private Estado estadoActual;
 }
+

@@ -3,14 +3,20 @@ package ar.edu.utn.frc.backend.logistica.entities;
 import java.util.List;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"solicitud"})
+@ToString(exclude = {"solicitud"})
 public class Ruta {
 
     @Id
@@ -23,8 +29,9 @@ public class Ruta {
     @Column(nullable = false)
     private Integer cantidadDepositos;
 
-    @Column(name = "id_solicitud", nullable = false)
-    private Integer idSolicitud;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_solicitud", nullable = false)
+    private SolicitudTransporte solicitud;
 
     // Lista de tramos que componen esta ruta
     @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)

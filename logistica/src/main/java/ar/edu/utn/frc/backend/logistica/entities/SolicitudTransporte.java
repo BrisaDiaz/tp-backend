@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.solicitudes.entities;
+package ar.edu.utn.frc.backend.logistica.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,9 +28,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-// Excluimos las relaciones LAZY de equals/hashCode para evitar cargas innecesarias
 @EqualsAndHashCode(exclude = {"estado", "cliente", "contenedor", "depositoOrigen", "depositoDestino"})
-// Excluimos las relaciones LAZY de toString para evitar cargas innecesarias durante el logging
 @ToString(exclude = {"estado", "cliente", "contenedor", "depositoOrigen", "depositoDestino"})
 public class SolicitudTransporte {
     @Id

@@ -84,9 +84,6 @@ public class SolicitudTransporteService {
 
         SolicitudTransporte solicitudGuardada = solicitudRepository.save(solicitud);
 
-        // 4. Actualizar la relación bidireccional en el Contenedor
-        contenedor.setSolicitud(solicitudGuardada);
-
         return mapearADto(solicitudGuardada);
     }
 
