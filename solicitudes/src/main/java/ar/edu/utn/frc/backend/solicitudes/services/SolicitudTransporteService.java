@@ -2,6 +2,7 @@ package ar.edu.utn.frc.backend.solicitudes.services;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.DepositoDto;
+import ar.edu.utn.frc.backend.solicitudes.dto.HistoricoEstadoContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransporteDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransportePostDto;
 import ar.edu.utn.frc.backend.solicitudes.entities.Cliente;
@@ -156,6 +158,40 @@ public class SolicitudTransporteService {
 
         return mapearADto(solicitudActualizada);
     }
+
+    // Actualizar el estado del contenedor de una solicitud a "En Viaje"
+    @Transactional
+    public Optional<ContenedorDto> actualizarContenedorAEnViaje(Integer id, String nombreDeposito) {
+
+            // 1. Buscar la Solicitud
+            SolicitudTransporte solicitud = solicitudRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
+
+            // 2. Actualizar el estado del contenedor asociado
+            return contenedorService.marcarEnViaje(solicitud.getContenedor().getId(), nombreDeposito);
+    }
+    
+    // Actualizar el estado del contenedor de una solicitud a "En Depósito"
+    @Transactional
+    public Optional<ContenedorDto> actualizarContenedorAEnDeposito(Integer id, String nombreDeposito) {
+
+            // 1. Buscar la Solicitud
+            SolicitudTransporte solicitud = solicitudRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
+
+            // 2. Actualizar el estado del contenedor asociado
+            return contenedorService.marcarEnDeposito(solicitud.getContenedor().getId(), nombreDeposito);
+    }
+    
+    // Obtener el seguimiento de los estados del contenedor asociado a una solicitud
+    public List<HistoricoEstadoContenedorDto> obtenerSeguimientoContenedor(Integer idSolicitud) {
+
+        // 1. Buscar la Solicitud
+        SolicitudTransporte solicitud = solicitudRepository.findById(idSolicitud)
+            .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, idSolicitud));
+        // 2. Obtener el seguimiento del contenedor asociado
+        return contenedorService.obtenerSeguimientoHistorico(solicitud.getContenedor().getId());
+ }
 
     // Buscar una solicitud por ID
     public Optional<SolicitudTransporteDto> buscarPorId(Integer id) {

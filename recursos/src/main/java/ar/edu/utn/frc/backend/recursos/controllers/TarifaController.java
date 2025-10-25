@@ -33,7 +33,7 @@ public class TarifaController {
     }
 
     // Obtiene el precio vigente de combustible
-    @GetMapping("/combustible/actual")
+    @GetMapping("/combustible")
     public ResponseEntity<PrecioCombustibleDto> getPrecioCombustibleActual() {
         return combustibleService.buscarPrecioVigente()
                 .map(ResponseEntity::ok)
@@ -48,7 +48,7 @@ public class TarifaController {
     }
 
     // Obtiene el cargo vigente
-    @GetMapping("/gestion/actual")
+    @GetMapping("/gestion")
     public ResponseEntity<CargoGestionDto> getCargoGestionActual() {
         return cargoGestionService.buscarCargoVigente()
                 .map(ResponseEntity::ok)

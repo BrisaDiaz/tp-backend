@@ -64,22 +64,4 @@ public class ContenedorController {
         List<ContenedorDto> contenedores = contenedorService.buscarPorEstado(estado);
         return ResponseEntity.ok(contenedores);
     }
-
-    // Actualizar estado a "En Viaje"
-    @PutMapping("/{id}/en-viaje")
-    public ResponseEntity<ContenedorDto> marcarContenedorEnViaje(
-            @PathVariable Integer id, @Valid @RequestBody InfoDepositoDto infoDepositoDto) {
-        return contenedorService.marcarEnViaje(id, infoDepositoDto.getNombre())
-                .map(contenedorDto -> ResponseEntity.ok().body(contenedorDto))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // Actualizar estado a "En Depósito"
-    @PutMapping("/{id}/en-deposito")
-    public ResponseEntity<ContenedorDto> marcarContenedorEnDeposito(
-        @PathVariable Integer id, @Valid @RequestBody InfoDepositoDto infoDepositoDto) {
-        return contenedorService.marcarEnDeposito(id, infoDepositoDto.getNombre())
-                .map(contenedorDto -> ResponseEntity.ok().body(contenedorDto))
-                .orElse(ResponseEntity.notFound().build());
-    }
 }

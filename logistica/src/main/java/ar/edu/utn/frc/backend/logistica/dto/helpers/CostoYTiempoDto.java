@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.solicitudes.dto.helpers;
+package ar.edu.utn.frc.backend.logistica.dto.helpers;
 
 import java.math.BigDecimal;
 
@@ -10,11 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CostoYPrecioDto {
+public class CostoYTiempoDto {
     @NotNull(message = "El costo no puede ser nulo")
     @DecimalMin(value = "0.0", inclusive = false, message = "El costo debe ser mayor que cero")
     private BigDecimal costo;

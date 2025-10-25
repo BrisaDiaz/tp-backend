@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
+import ar.edu.utn.frc.backend.solicitudes.dto.HistoricoEstadoContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.entities.Contenedor;
 import ar.edu.utn.frc.backend.solicitudes.entities.Estado;
 import ar.edu.utn.frc.backend.solicitudes.exceptions.ResourceNotFoundException;
@@ -141,11 +142,11 @@ public class ContenedorService {
     ) {
         // 1. Buscar Contenedor
         Contenedor contenedor = contenedorRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Contenedor", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Contenedor", id));
 
         // 2. Buscar Estado
         Estado nuevoEstado = estadoRepository.findByNombre(nuevoEstadoNombre)
-            .orElseThrow(() -> new ResourceNotFoundException("Estado", nuevoEstadoNombre));
+                .orElseThrow(() -> new ResourceNotFoundException("Estado", nuevoEstadoNombre));
 
         // ********* LÓGICA CLAVE DE CORRECCIÓN: Manejo de Histórico *********
         LocalDate ahora = LocalDate.now();
@@ -159,12 +160,16 @@ public class ContenedorService {
 
         // 4. Crear y guardar el nuevo historicoEstado
         historicoEstadoService.crearNuevoHistorico(
-            contenedorActualizado,
-            nuevoEstado,
-            ahora,
-            descripcion
-        );
+                contenedorActualizado,
+                nuevoEstado,
+                ahora,
+                descripcion);
 
         return Optional.of(modelMapper.map(contenedorActualizado, ContenedorDto.class));
+    }
+    
+    // Obtener el seguimiento histórico de un contenedor
+    public List<HistoricoEstadoContenedorDto> obtenerSeguimientoHistorico(Integer idContenedor) {
+        return historicoEstadoService.buscarHistoricoPorContenedorId(idContenedor);
     }
 }

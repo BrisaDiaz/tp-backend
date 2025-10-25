@@ -11,9 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.ResponseEntity.status;
+
+import java.util.List;
+
+import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
+import ar.edu.utn.frc.backend.solicitudes.dto.HistoricoEstadoContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransporteDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransportePostDto;
-import ar.edu.utn.frc.backend.solicitudes.dto.helpers.CostoYPrecioDto;
+import ar.edu.utn.frc.backend.solicitudes.dto.helpers.CostoYTiempoDto;
+import ar.edu.utn.frc.backend.solicitudes.dto.helpers.InfoDepositoDto;
+import ar.edu.utn.frc.backend.solicitudes.services.ContenedorService;
 import ar.edu.utn.frc.backend.solicitudes.services.SolicitudTransporteService;
 import jakarta.validation.Valid;
 
@@ -43,11 +50,11 @@ public class SolicitudTransporteController {
     @PutMapping("/{id}/programada")
     public ResponseEntity<SolicitudTransporteDto> actualizarSolicitudAProgramada(
             @PathVariable Integer id,
-            @RequestBody CostoYPrecioDto costoYPrecioDto) {
+            @RequestBody CostoYTiempoDto costoYTiempoDto) {
         SolicitudTransporteDto solicitudActualizada = solicitudTransporteService.actualizarEstadoAProgramada(
                 id,
-                costoYPrecioDto.getCosto(),
-                costoYPrecioDto.getTiempo());
+                costoYTiempoDto.getCosto(),
+                costoYTiempoDto.getTiempo());
         return ResponseEntity.ok(solicitudActualizada);
     }
 
@@ -63,12 +70,37 @@ public class SolicitudTransporteController {
     @PutMapping("/{id}/entregada")
     public ResponseEntity<SolicitudTransporteDto> actualizarSolicitudAEntregada(
             @PathVariable Integer id,
-            @RequestBody CostoYPrecioDto costoYPrecioDto) {
+            @RequestBody CostoYTiempoDto costoYTiempoDto) {
         SolicitudTransporteDto solicitudActualizada = solicitudTransporteService.actualizarEstadoAEntregada(
                 id,
-                costoYPrecioDto.getCosto(),
-                costoYPrecioDto.getTiempo());
+                costoYTiempoDto.getCosto(),
+                costoYTiempoDto.getTiempo());
         return ResponseEntity.ok(solicitudActualizada);
     }
 
+    // Actualizar estado del contenedor de una solicitud a "En Viaje"
+    @PutMapping("/{id}/contenedor/en-viaje")
+    public ResponseEntity<ContenedorDto> marcarContenedorEnViaje(
+            @PathVariable Integer id, @Valid @RequestBody InfoDepositoDto infoDepositoDto) {
+        return solicitudTransporteService.actualizarContenedorAEnDeposito(id, infoDepositoDto.getNombre())
+                .map(contenedorDto -> ResponseEntity.ok().body(contenedorDto))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Actualizar estado del contenedor de una solicitud a "En Depósito"
+    @PutMapping("/{id}/contenedor/en-deposito")
+    public ResponseEntity<ContenedorDto> marcarContenedorEnDeposito(
+            @PathVariable Integer id, @Valid @RequestBody InfoDepositoDto infoDepositoDto) {
+
+        return solicitudTransporteService.actualizarContenedorAEnViaje(id, infoDepositoDto.getNombre())
+                .map(contenedorDto -> ResponseEntity.ok().body(contenedorDto))
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // Obtener seguimiento historico del contenedor asociado a una solicitud
+    @GetMapping("/{id}/contenedor/seguimiento")
+    public ResponseEntity<List<HistoricoEstadoContenedorDto>> obtenerSeguimientoContenedorDeSolicitud(@PathVariable Integer id) {
+        List<HistoricoEstadoContenedorDto> seguimiento = solicitudTransporteService.obtenerSeguimientoContenedor(id);
+        return ResponseEntity.ok(seguimiento);
+    }
 }
