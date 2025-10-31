@@ -1,39 +1,30 @@
 server:
-  port: 8080 # Puerto estándar para el API Gateway
+  port: 8080
 
 spring:
+  application:
+    name: gateway
+
   cloud:
     gateway:
-      # ----------------------------------------------------
-      # 1. Configuración CORS Global
-      # ----------------------------------------------------
-      server:
-        webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: 'http://localhost:5173, http://localhost:4200, http://localhost:3000, http://127.0.0.1:5173'
-                allowedMethods: '*'
-                allowedHeaders: '*'
-                allowCredentials: true
+      default-filters:
+        - RemoveRequestHeader=Cookie
 
-  # ----------------------------------------------------
-  # 2. Configuración de Seguridad OAuth2 (Keycloak)
-  # ----------------------------------------------------
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: 'http://localhost:5173, http://localhost:3000'
+            allowedMethods: '*'
+            allowedHeaders: '*'
+            allowCredentials: true
+
   security:
     oauth2:
       resourceserver:
         jwt:
-          # URI del emisor del token (Keycloak).
-          issuer-uri: http://keycloak:8080/realms/nombre_realm
-          # JWKS endpoint para obtener las claves públicas
-          jwk-set-uri: http://keycloak:8080/realms/nombre_realm/protocol/openid-connect/certs
+          issuer-uri: http://keycloak:8080/realms/tpi-backend
 
-# ----------------------------------------------------
-# 3. Endpoints de Actuator
-# ----------------------------------------------------
-management:
-  endpoints:
-    web:
-      exposure:
-        include: 'health,info,gateway'
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: INFO

@@ -30,8 +30,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # REEMPLAZAR 'NOMBRE_REALM'
-          issuer-uri: http://keycloak:8080/realms/NOMBRE_REALM
+          issuer-uri: http://keycloak:8080/realms/tpi-backend
 
 # ----------------------------------------------------
 # 4. Configuración de Swagger (springdoc)

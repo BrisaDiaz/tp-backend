@@ -1,0 +1,7 @@
+- docker compose build --no-cache
+- docker compose up -d
+- keycloak: http://localhost:8180/
+  - Iniciar sesión con:
+    - Usuario: admin
+    - Contraseña: admin123
+- pgAdmin: http://localhost:5050/
