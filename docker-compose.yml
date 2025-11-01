@@ -1,7 +1,6 @@
+version: '3.9'
+
 services:
-  # ----------------------------------------------------
-  # 🐘 POSTGRES - Base de datos compartida
-  # ----------------------------------------------------
   postgres:
     image: postgres:16
     container_name: postgres
@@ -20,15 +19,12 @@ services:
       timeout: 5s
       retries: 5
 
-  # ----------------------------------------------------
-  # 🗝️ KEYCLOAK - Servidor de autenticación
-  # ----------------------------------------------------
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.3
     container_name: keycloak
     command: start-dev
     ports:
-      - '8180:8080' # Acceso externo
+      - '8180:8080'
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin123
@@ -37,17 +33,16 @@ services:
       KC_DB_USERNAME: myuser
       KC_DB_PASSWORD: secret
       KC_HTTP_ENABLED: true
-    # KC_HOSTNAME: localhost
-    # KC_PROXY: edge
+      # 🔑 FIX CRÍTICO: Keycloak anuncia esta URL como su Issuer.
+      # Usamos el alias de host y el puerto expuesto.
+      KC_HOSTNAME_URL: http://host.docker.internal:8180
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - keycloak_data:/opt/keycloak/data
     restart: always
 
-  # ----------------------------------------------------
-  # 🧭 PGADMIN - Interfaz web para PostgreSQL
-  # ----------------------------------------------------
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
@@ -57,14 +52,12 @@ services:
     ports:
       - '5050:80'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     restart: always
 
-  # ----------------------------------------------------
-  # 🌐 API GATEWAY
-  # ----------------------------------------------------
   api-gateway:
     build:
       context: ./gateway
@@ -75,15 +68,19 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      - keycloak
-      - recursos
-      - solicitudes
-      - logistica
+      keycloak:
+        condition: service_started
+      recursos:
+        condition: service_started
+      solicitudes:
+        condition: service_started
+      logistica:
+        condition: service_started
     restart: on-failure
+    # ✅ FIX CRÍTICO: Permite que el contenedor Gateway resuelva host.docker.internal
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
-  # ----------------------------------------------------
-  # 🚛 SERVICIO RECURSOS
-  # ----------------------------------------------------
   recursos:
     build:
       context: ./recursos
@@ -94,13 +91,15 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      - postgres
-      - keycloak
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_started
     restart: on-failure
+    # ✅ OPCIONAL: Añadir el extra_hosts a todos los microservicios si son Resource Servers
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
-  # ----------------------------------------------------
-  # 📦 SERVICIO SOLICITUDES
-  # ----------------------------------------------------
   solicitudes:
     build:
       context: ./solicitudes
@@ -111,13 +110,15 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      - postgres
-      - keycloak
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_started
     restart: on-failure
+    # ✅ OPCIONAL: Añadir el extra_hosts a todos los microservicios si son Resource Servers
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
-  # ----------------------------------------------------
-  # 🚚 SERVICIO LOGÍSTICA
-  # ----------------------------------------------------
   logistica:
     build:
       context: ./logistica
@@ -129,13 +130,15 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       GOOGLE_MAPS_API_KEY: 'TU_CLAVE_DE_API_REAL'
     depends_on:
-      - postgres
-      - keycloak
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_started
     restart: on-failure
+    # ✅ OPCIONAL: Añadir el extra_hosts a todos los microservicios si son Resource Servers
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
-# ----------------------------------------------------
-# 🗃️ Volúmenes persistentes
-# ----------------------------------------------------
 volumes:
   postgres_data:
   keycloak_data:

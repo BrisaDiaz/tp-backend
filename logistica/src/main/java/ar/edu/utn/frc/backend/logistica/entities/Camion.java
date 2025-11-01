@@ -40,6 +40,9 @@ public class Camion {
     @Column(name = "consumo_combustible_promedio", nullable = false, precision = 10, scale = 2)
     private BigDecimal consumoCombustiblePromedio;
 
+    @Column(name = "auth_id", unique = true, length = 255)
+    private String authId;
+
     @Column(name = "nombre_transportista", nullable = false, length = 100)
     private String nombreTransportista;
 

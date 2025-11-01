@@ -40,19 +40,18 @@ public class SolicitudTransporteService {
     @Autowired
     private ContenedorService contenedorService;
     @Autowired
-    private EstadoRepository estadoRepository;       
+    private EstadoRepository estadoRepository;      
     @Autowired
     private ClienteRepository clienteRepository;     
     @Autowired
-    private DepositoRepository depositoRepository;   
+    private DepositoRepository depositoRepository;  
     @Autowired
     private ModelMapper modelMapper;
 
     // Guardar una nueva solicitud de transporte y su contenedor asociado
     @Transactional
     public SolicitudTransporteDto guardarSolicitud(SolicitudTransportePostDto postDto) {
-
-        // 1. Obtener entidades relacionadas (a través de sus servicios)
+        // ... (Lógica de guardar solicitud sin cambios)
         Estado estadoBorrador = estadoRepository.findByNombre(ESTADO_BORRADOR)
                 .orElseThrow(() -> new ResourceNotFoundException("Estado", ESTADO_BORRADOR + " no configurado."));
 
@@ -66,13 +65,10 @@ public class SolicitudTransporteService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Depósito de Destino", postDto.getIdDepositoDestino()));
 
-        // 2. Crear y persistir el Contenedor
-        // El ContenedorService se encarga de asignarle su estado inicial (Pendiente de Entrega) y su historial.
         Contenedor contenedor = contenedorService.guardarContenedor(
                 postDto.getVolumenContenedor(),
                 postDto.getPesoContenedor());
 
-        // 3. Crear y persistir la Solicitud
         SolicitudTransporte solicitud = SolicitudTransporte.builder()
                 .fechaSolicitud(LocalDate.now())
                 .estado(estadoBorrador)
@@ -90,17 +86,13 @@ public class SolicitudTransporteService {
     // Actualizar el estado de una solicitud a "Programada"
     @Transactional
     public SolicitudTransporteDto actualizarEstadoAProgramada(Integer id, BigDecimal costoEstimado, int tiempoEstimado) {
-
-        // 1. Buscar la Solicitud
+        // ... (Lógica de actualización de estado sin cambios)
         SolicitudTransporte solicitud = solicitudRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
 
-        // 2. Buscar el nuevo estado "Programada"
         Estado estadoProgramada = estadoRepository.findByNombre(ESTADO_PROGRAMADA)
                 .orElseThrow(() -> new ResourceNotFoundException("Estado", ESTADO_PROGRAMADA + " no configurado."));
 
-
-        // 3. Actualizar y persistir
         solicitud.setEstado(estadoProgramada);
         solicitud.setCostoEstimado(costoEstimado);
         solicitud.setTiempoEstimado(tiempoEstimado);
@@ -112,19 +104,15 @@ public class SolicitudTransporteService {
    // Actualizar el estado de una solicitud a "Entregada"
     @Transactional
     public SolicitudTransporteDto actualizarEstadoAEntregada(Integer id, BigDecimal costoReal, int tiempoReal) {
-
-        // 1. Buscar la Solicitud
+        // ... (Lógica de actualización de estado sin cambios)
         SolicitudTransporte solicitud = solicitudRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
 
-        // 2. Buscar el nuevo estado "Entregada"
         Estado estadoEntregada = estadoRepository.findByNombre(ESTADO_ENTREGADA)
                 .orElseThrow(() -> new ResourceNotFoundException("Estado", ESTADO_ENTREGADA + " no configurado."));
 
-        // 3. Actualizar el estado del contenedor asociado
         contenedorService.marcarComoEntregado(solicitud.getContenedor().getId());
 
-        // 4. Actualizar y persistir
         solicitud.setEstado(estadoEntregada);
         solicitud.setCostoReal(costoReal);
         solicitud.setTiempoReal(tiempoReal);
@@ -136,20 +124,16 @@ public class SolicitudTransporteService {
     // Actualizar el estado de una solicitud a "En Tránsito"
     @Transactional
     public SolicitudTransporteDto actualizarEstadoAEnTransito(Integer id) {
-
-        // 1. Buscar la Solicitud
+        // ... (Lógica de actualización de estado sin cambios)
         SolicitudTransporte solicitud = solicitudRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
 
-        // 2. Buscar el nuevo estado "En Tránsito"
         Estado estadoEnTransito = estadoRepository.findByNombre(ESTADO_EN_TRANSITO)
                 .orElseThrow(() -> new ResourceNotFoundException("Estado", ESTADO_EN_TRANSITO + " no configurado."));
 
         String nombreDepositoOrigen = solicitud.getDepositoOrigen().getNombre();
-        // 3. Actualizar el estado del contenedor asociado
         contenedorService.marcarEnViaje(solicitud.getContenedor().getId(), nombreDepositoOrigen);
 
-        // 4. Actualizar y persistir
         solicitud.setEstado(estadoEnTransito);
         SolicitudTransporte solicitudActualizada = solicitudRepository.save(solicitud);
 
@@ -159,36 +143,25 @@ public class SolicitudTransporteService {
     // Actualizar el estado del contenedor de una solicitud a "En Viaje"
     @Transactional
     public Optional<ContenedorDto> actualizarContenedorAEnViaje(Integer id, String nombreDeposito) {
-
-            // 1. Buscar la Solicitud
-            SolicitudTransporte solicitud = solicitudRepository.findById(id)
-                            .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
-
-            // 2. Actualizar el estado del contenedor asociado
-            return contenedorService.marcarEnViaje(solicitud.getContenedor().getId(), nombreDeposito);
+             SolicitudTransporte solicitud = solicitudRepository.findById(id)
+                             .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
+             return contenedorService.marcarEnViaje(solicitud.getContenedor().getId(), nombreDeposito);
     }
     
     // Actualizar el estado del contenedor de una solicitud a "En Depósito"
     @Transactional
     public Optional<ContenedorDto> actualizarContenedorAEnDeposito(Integer id, String nombreDeposito) {
-
-            // 1. Buscar la Solicitud
-            SolicitudTransporte solicitud = solicitudRepository.findById(id)
-                            .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
-
-            // 2. Actualizar el estado del contenedor asociado
-            return contenedorService.marcarEnDeposito(solicitud.getContenedor().getId(), nombreDeposito);
+             SolicitudTransporte solicitud = solicitudRepository.findById(id)
+                             .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, id));
+             return contenedorService.marcarEnDeposito(solicitud.getContenedor().getId(), nombreDeposito);
     }
     
     // Obtener el seguimiento de los estados del contenedor asociado a una solicitud
     public List<HistoricoEstadoContenedorDto> obtenerSeguimientoContenedor(Integer idSolicitud) {
-
-        // 1. Buscar la Solicitud
         SolicitudTransporte solicitud = solicitudRepository.findById(idSolicitud)
             .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_SOLICITUD, idSolicitud));
-        // 2. Obtener el seguimiento del contenedor asociado
         return contenedorService.obtenerSeguimientoHistorico(solicitud.getContenedor().getId());
- }
+   }
 
     // Buscar una solicitud por ID
     public Optional<SolicitudTransporteDto> buscarPorId(Integer id) {
@@ -209,6 +182,31 @@ public class SolicitudTransporteService {
         return buscarPorEstado(ESTADO_BORRADOR);
     }
 
+    // ====================================================================
+    // MÉTODOS DE SEGURIDAD PARA @PreAuthorize
+    // ====================================================================
+
+    public boolean esDuenioDeSolicitud(Integer solicitudId, String authIdDelToken) {
+        
+        Optional<SolicitudTransporte> solicitudOpt = solicitudRepository.findById(solicitudId);
+        
+        // Si no se encuentra la solicitud, devolvemos false para ocultar su existencia a usuarios no autorizados.
+        if (solicitudOpt.isEmpty() || authIdDelToken == null || authIdDelToken.trim().isEmpty()) {
+            return false;
+        }
+
+        SolicitudTransporte solicitud = solicitudOpt.get();
+        Cliente clienteDuenio = solicitud.getCliente();
+
+        // Si el cliente dueño de la solicitud no tiene un authId (aún no ha iniciado sesión vía Keycloak)
+        if (clienteDuenio.getAuthId() == null) {
+            return false;
+        }
+        
+        // Comparamos el authId de la solicitud con el authId del token.
+        return clienteDuenio.getAuthId().equals(authIdDelToken);
+    }
+
     private SolicitudTransporteDto mapearADto(SolicitudTransporte entity) {
         return SolicitudTransporteDto.builder()
                 .id(entity.getId())
@@ -218,7 +216,8 @@ public class SolicitudTransporteService {
                 .costoReal(entity.getCostoReal())
                 .tiempoReal(entity.getTiempoReal())
                 .estado(entity.getEstado().getNombre())
-                .clienteId(entity.getCliente().getId())
+                // El clienteId sigue siendo el ID numérico interno para el DTO
+                .clienteId(entity.getCliente().getId()) 
                 .contenedor(modelMapper.map(entity.getContenedor(), ContenedorDto.class))
                 .depositoOrigen(modelMapper.map(entity.getDepositoOrigen(), DepositoDto.class))
                 .depositoDestino(modelMapper.map(entity.getDepositoDestino(), DepositoDto.class))

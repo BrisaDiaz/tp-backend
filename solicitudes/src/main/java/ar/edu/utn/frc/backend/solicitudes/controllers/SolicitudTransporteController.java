@@ -1,7 +1,11 @@
 package ar.edu.utn.frc.backend.solicitudes.controllers;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import static org.springframework.http.ResponseEntity.status;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,17 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.http.ResponseEntity.status;
-
-import java.util.List;
-
 import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.HistoricoEstadoContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransporteDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransportePostDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.helpers.CostoYTiempoDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.helpers.InfoDepositoDto;
-import ar.edu.utn.frc.backend.solicitudes.services.ContenedorService;
 import ar.edu.utn.frc.backend.solicitudes.services.SolicitudTransporteService;
 import jakarta.validation.Valid;
 
@@ -32,6 +31,7 @@ public class SolicitudTransporteController {
 
     // Obtener una solicitud de transporte por ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @solicitudTransporteService.esDuenioDeSolicitud(#id, authentication.principal.claim('cliente_id'))")
     public ResponseEntity<SolicitudTransporteDto> buscarSolicitudPorId(@PathVariable Integer id) {
         return solicitudTransporteService.buscarPorId(id)
                 .map(solicitudDto -> ResponseEntity.ok().body(solicitudDto))
@@ -107,6 +107,7 @@ public class SolicitudTransporteController {
     
     // Obtener seguimiento historico del contenedor asociado a una solicitud
     @GetMapping("/{id}/contenedor/seguimiento")
+    @PreAuthorize("hasRole('ADMIN') or @solicitudTransporteService.esDuenioDeSolicitud(#id, authentication.principal.claim('cliente_id'))")
     public ResponseEntity<List<HistoricoEstadoContenedorDto>> obtenerSeguimientoContenedorDeSolicitud(@PathVariable Integer id) {
         List<HistoricoEstadoContenedorDto> seguimiento = solicitudTransporteService.obtenerSeguimientoContenedor(id);
         return ResponseEntity.ok(seguimiento);

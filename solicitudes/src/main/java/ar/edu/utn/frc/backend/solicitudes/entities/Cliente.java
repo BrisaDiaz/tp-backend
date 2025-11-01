@@ -20,6 +20,9 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "auth_id", unique = true, length = 255)
+    private String authId;
+
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 

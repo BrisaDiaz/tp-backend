@@ -35,19 +35,19 @@ spring:
             provider: keycloak
             client-id: tpi-backend-client
             authorization-grant-type: authorization_code
-            # 🚨 MANTENER EN localhost:8080 para la URL de retorno del host
+            # Esta URL de redirección es la que usa el navegador, se mantiene en localhost
             redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
             scope: openid, profile, email
 
         provider:
           keycloak:
-            # 💡 FIX CRÍTICO 1 (Revertido): Debe usar el nombre del servicio Docker para que inicie
-            issuer-uri: http://keycloak:8080/realms/tpi-backend 
+            # 💡 FIX CRÍTICO: Debe coincidir con KC_HOSTNAME_URL para que Spring inicie.
+            issuer-uri: http://host.docker.internal:8180/realms/tpi-backend
 
       resourceserver:
         jwt:
-          # 💡 FIX CRÍTICO 2 (Correcto): Debe usar el nombre del servicio Docker para la validación
-          issuer-uri: http://keycloak:8080/realms/tpi-backend
+          # 💡 FIX CRÍTICO: Debe coincidir con KC_HOSTNAME_URL para que Spring inicie.
+          issuer-uri: http://host.docker.internal:8180/realms/tpi-backend
 
 logging:
   level:
