@@ -1,0 +1,149 @@
+{
+  "realm": "tpi-backend",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "tpi-backend-client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "rootUrl": "http://localhost:8080",
+      "redirectUris": [
+        "http://localhost:8080/*",
+        "http://localhost:8080/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": ["*"],
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": false
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator role"
+      },
+      {
+        "name": "cliente",
+        "description": "Client role"
+      },
+      {
+        "name": "transportista",
+        "description": "Transportation role"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin01",
+      "enabled": true,
+      "email": "admin01@example.com",
+      "firstName": "Marcos",
+      "lastName": "Salas",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "admin02",
+      "enabled": true,
+      "email": "admin02@example.com",
+      "firstName": "Natalia",
+      "lastName": "Quinteros",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "cliente01",
+      "enabled": true,
+      "email": "cliente01@example.com",
+      "firstName": "Carla",
+      "lastName": "Gómez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["cliente"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "cliente02",
+      "enabled": true,
+      "email": "cliente02@example.com",
+      "firstName": "Juan",
+      "lastName": "Pérez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["cliente"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "transportista01",
+      "enabled": true,
+      "email": "transportista01@example.com",
+      "firstName": "Luis",
+      "lastName": "Rodríguez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "transportista02",
+      "enabled": true,
+      "email": "transportista02@example.com",
+      "firstName": "Ana",
+      "lastName": "Martínez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    }
+  ]
+}

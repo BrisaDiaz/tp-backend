@@ -1,8 +1,10 @@
+Perfecto! Veo que los microservicios están configurados correctamente con `tpi-backend`. El problema era solo en el README. Aquí está el README actualizado:
+
 # 📚 Guía de Inicio y Autenticación del Backend
 
 Este documento proporciona los pasos necesarios para levantar el entorno de microservicios mediante Docker Compose y obtener un `access_token` válido desde Keycloak.
 
-## 1\. 🚀 Inicio del Entorno (Docker Compose)
+## 1. 🚀 Inicio del Entorno (Docker Compose)
 
 Asegúrate de estar en el directorio raíz donde se encuentra el archivo `docker-compose.yml`.
 
@@ -10,11 +12,12 @@ Asegúrate de estar en el directorio raíz donde se encuentra el archivo `docker
 
 Ejecuta los siguientes comandos para construir las imágenes y levantar todos los servicios en modo _detached_ (`-d`).
 
-- **Construir las imágenes (con limpieza de caché):**
+- **Construir las imágenes:**
+
+  ```bash
+  docker compose build
   ```
-  export COMPOSE_BAKE=false
-  docker compose build --no-cache
-  ```
+
 - **Iniciar los servicios:**
   ```bash
   docker compose up -d
@@ -22,82 +25,186 @@ Ejecuta los siguientes comandos para construir las imágenes y levantar todos lo
 
 ---
 
-## 2\. 🌐 Acceso a los Servicios Web
+## 2. 🌐 Acceso a los Servicios Web
 
 Una vez que los contenedores estén levantados, puedes acceder a las interfaces de gestión:
 
-| Servicio                           | URL de Acceso            | Credenciales de Acceso (Iniciales)                        |
-| :--------------------------------- | :----------------------- | :-------------------------------------------------------- |
-| **Keycloak** (Autenticación)       | `http://localhost:8180/` | **Usuario:** `admin` / **Contraseña:** `admin123`         |
-| **PgAdmin** (Gestión de DB)        | `http://localhost:5050/` | **Email:** `admin@admin.com` / **Contraseña:** `admin123` |
-| **API Gateway** (Punto de Entrada) | `http://localhost:8080/` | N/A                                                       |
+| Servicio                           | URL de Acceso                                      | Credenciales de Acceso (Iniciales)                        |
+| :--------------------------------- | :------------------------------------------------- | :-------------------------------------------------------- |
+| **Keycloak** (Autenticación)       | `http://localhost:8180/admin/master/console/`      | **Usuario:** `admin` / **Contraseña:** `admin123`         |
+| **Keycloak Realm TPI**             | `http://localhost:8180/admin/tpi-backend/console/` | Usar usuarios creados (ver tabla abajo)                   |
+| **PgAdmin** (Gestión de DB)        | `http://localhost:5050/`                           | **Email:** `admin@admin.com` / **Contraseña:** `admin123` |
+| **API Gateway** (Punto de Entrada) | `http://localhost:8080/`                           | Requiere autenticación JWT                                |
+| **Servicio Recursos**              | `http://localhost:8082/`                           | Requiere autenticación JWT                                |
+| **Servicio Solicitudes**           | `http://localhost:8083/`                           | Requiere autenticación JWT                                |
+| **Servicio Logística**             | `http://localhost:8084/`                           | Requiere autenticación JWT                                |
 
 ---
 
-## 3\. 🗝️ Obtener un `access_token` (Flujo de Código de Autorización)
+## 3. 👥 Usuarios Pre-configurados
 
-Para acceder a las APIs protegidas por el **API Gateway**, necesitas obtener un `access_token` de Keycloak. Aquí se utiliza el flujo de **Código de Autorización** (`authorization_code`).
+**Realm:** `tpi-backend`
 
-### Paso 1: Obtener el Código de Autorización (`code`)
+| Usuario             | Email                         | Contraseña | Rol             | Descripción               |
+| :------------------ | :---------------------------- | :--------- | :-------------- | :------------------------ |
+| **admin01**         | `admin01@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
+| **admin02**         | `admin02@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
+| **cliente01**       | `cliente01@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
+| **cliente02**       | `cliente02@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
+| **transportista01** | `transportista01@example.com` | `Clave123` | `transportista` | Usuario transportista     |
+| **transportista02** | `transportista02@example.com` | `Clave123` | `transportista` | Usuario transportista     |
 
-Navega a esta URL en tu navegador. Esto inicia el flujo de autenticación de Keycloak.
+---
+
+## 4. 🗝️ Obtener un `access_token`
+
+Para acceder a las APIs protegidas, necesitas obtener un `access_token` de Keycloak.
+
+### Método 1: Flujo Directo (Password Grant) - RECOMENDADO
+
+```bash
+curl -X POST http://localhost:8180/realms/tpi-backend/protocol/openid-connect/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=cliente01&password=Clave123&grant_type=password&client_id=tpi-backend-client"
+```
+
+**Ejemplo de Respuesta:**
+
+```json
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwi...",
+  "expires_in": 300,
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiw...",
+  "token_type": "Bearer",
+  "scope": "openid profile email"
+}
+```
+
+### Método 2: Flujo de Código de Autorización
+
+#### Paso 1: Obtener Código
+
+Navega a:
 
 ```
-http://localhost:8180/realms/tpi-backend/protocol/openid-connect/auth?client_id=tpi-backend-client&response_type=code&redirect_uri=http://localhost:8080/api/login/oauth2/code/keycloak
+http://localhost:8180/realms/tpi-backend/protocol/openid-connect/auth?client_id=tpi-backend-client&response_type=code&redirect_uri=http://localhost:8080/login/oauth2/code/keycloak
 ```
 
-1.  **Inicia sesión** con un usuario válido (ejemplo):
-
-    - **Usuario:** `cliente01`
-    - **Contraseña:** `clave123`
-
-2.  Tras la autenticación exitosa, Keycloak te redirigirá a la `redirect_uri` especificada. **Esta redirección fallará** (es lo esperado, ya que no estamos ejecutando la aplicación de cliente completa), pero la URL contendrá el parámetro `code`.
-
-    **Ejemplo de URL de redirección:**
-
-    ```
-    http://localhost:8080/api/login/oauth2/code/keycloak?session_state=...&code=0f716011-c34e-4c3b-a5e2-e18818dabeb2.c48f91b3-04d5-4e2f-9225-e2c64d45afd8.02960d42-e205-4c8e-ad42-6f765b909aa1
-    ```
-
-3.  **Extrae el valor completo del parámetro `code`** de la URL.
-
-    - **Code Extraído:** `0f716011-c34e-4c3b-a5e2-e18818dabeb2.c48f91b3-04d5-4e2f-9225-e2c64d45afd8.02960d42-e205-4c8e-ad42-6f765b909aa1`
-
-### Paso 2: Intercambiar el Código por el Token
-
-Utiliza el `code` extraído en el paso anterior para realizar una petición **POST** al _Token Endpoint_.
-
-Realiza la siguiente petición (usando herramientas como Postman, Insomnia o cURL):
+#### Paso 2: Intercambiar Código por Token
 
 ```http
 POST http://localhost:8180/realms/tpi-backend/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code
-code=<el_code_recibido>  <-- REEMPLAZA ESTE VALOR
+code=<el_code_recibido>
 client_id=tpi-backend-client
-redirect_uri=http://localhost:8080/api/login/oauth2/code/keycloak
+redirect_uri=http://localhost:8080/login/oauth2/code/keycloak
 ```
 
-### Paso 3: Usar el `access_token`
+---
 
-La respuesta del _Token Endpoint_ contiene el `access_token` (JWT) que debe usarse para interactuar con las APIs del backend.
+## 5. 🔐 Usar el `access_token`
 
-**Ejemplo de Respuesta (Fragmento):**
+Una vez obtenido el token, úsalo en la cabecera **`Authorization`**:
 
-```json
-{
-  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwi...",
-  "expires_in": 300,
-  "token_type": "Bearer"
-  // ... otros campos
-}
+```bash
+curl -H "Authorization: Bearer <access_token>" http://localhost:8080/api/recursos/camiones
 ```
-
-Para usar el token, colócalo en la cabecera **`Authorization`** de tus peticiones al API Gateway:
 
 | Cabecera          | Valor                            |
 | :---------------- | :------------------------------- |
 | **Authorization** | `Bearer <access_token_extraido>` |
 
-Ahora puedes realizar peticiones a tu API Gateway en `http://localhost:8080/` a los _endpoints_ protegidos.
+---
+
+## 6. 📊 Estructura de Microservicios
+
+| Servicio        | Puerto Interno | Puerto Externo | Descripción                          |
+| :-------------- | :------------- | :------------- | :----------------------------------- |
+| **Gateway**     | 8080           | 8080           | API Gateway - Punto de entrada único |
+| **Recursos**    | 8081           | 8082           | Gestión de camiones y contenedores   |
+| **Solicitudes** | 8082           | 8083           | Gestión de solicitudes de transporte |
+| **Logística**   | 8083           | 8084           | Planificación de rutas y logística   |
+
+---
+
+## 7. 🛠️ Comandos Útiles
+
+### Ver estado de los contenedores:
+
+```bash
+docker compose ps
+```
+
+### Ver logs de servicios:
+
+```bash
+docker compose logs gateway
+docker compose logs keycloak
+docker compose logs recursos
+```
+
+### Reiniciar servicios:
+
+```bash
+docker compose restart gateway
+```
+
+### Detener todos los servicios:
+
+```bash
+docker compose down
+```
+
+---
+
+## 8. 🔍 Verificación del Sistema
+
+### Probar servicios individualmente (sin Gateway):
+
+```bash
+# Recursos
+curl -H "Authorization: Bearer <token>" http://localhost:8082/actuator/health
+
+# Solicitudes
+curl -H "Authorization: Bearer <token>" http://localhost:8083/actuator/health
+
+# Logística
+curl -H "Authorization: Bearer <token>" http://localhost:8084/actuator/health
+```
+
+### Verificar base de datos:
+
+```bash
+# Conectar a PostgreSQL
+docker exec -it postgres psql -U myuser -d mydatabase
+```
+
+---
+
+## 9. ❌ Solución de Problemas
+
+### Error 401 en endpoints:
+
+- **Causa:** Token inválido, expirado o faltante
+- **Solución:** Obtener un nuevo token válido
+
+### Error de conexión a Keycloak:
+
+- **Causa:** Keycloak no está completamente iniciado
+- **Solución:** Esperar 30-60 segundos y reintentar
+
+### Usuario/contraseña incorrectos:
+
+- **Causa:** Credenciales erróneas
+- **Solución:** Usar las credenciales de la tabla de usuarios
+
+### Error "Realm does not exist":
+
+- **Causa:** Realm incorrecto en la URL
+- **Solución:** Usar `tpi-backend` (no `tpi-backend-app`)
+
+---
+
+**✅ El sistema está configurado correctamente.** El error 401 en los endpoints es normal e indica que la autenticación está funcionando. Obtén un token siguiendo los pasos anteriores para acceder a las APIs.

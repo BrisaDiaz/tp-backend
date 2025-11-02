@@ -7,49 +7,53 @@ spring:
 
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 30000
+        response-timeout: 60s
       default-filters:
         - RemoveRequestHeader=Cookie
-      # ... (CORS Configuration) ...
-      server:
-        webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: 'http://localhost:5173, http://localhost:3000'
-                allowedMethods: '*'
-                allowedHeaders: '*'
-                allowCredentials: true
-
-      # 🛣️ RUTA DE PRUEBA:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: 'http://localhost:5173, http://localhost:3000'
+            allowed-methods: '*'
+            allowed-headers: '*'
+            allow-credentials: true
       routes:
+        - id: recursos-service
+          uri: lb://recursos
+          predicates:
+            - Path=/api/recursos/**
+
         - id: solicitudes-service
           uri: lb://solicitudes
           predicates:
             - Path=/api/solicitudes/**
 
+        - id: logistica-service
+          uri: lb://logistica
+          predicates:
+            - Path=/api/logistica/**
+
   security:
     oauth2:
-      client:
-        registration:
-          keycloak:
-            provider: keycloak
-            client-id: tpi-backend-client
-            authorization-grant-type: authorization_code
-            # 🚨 MANTENER EN localhost:8080 para la URL de retorno del host
-            redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
-            scope: openid, profile, email
-
-        provider:
-          keycloak:
-            # 💡 FIX CRÍTICO 1 (Revertido): Debe usar el nombre del servicio Docker para que inicie
-            issuer-uri: http://keycloak:8080/realms/tpi-backend 
-
       resourceserver:
         jwt:
-          # 💡 FIX CRÍTICO 2 (Correcto): Debe usar el nombre del servicio Docker para la validación
-          issuer-uri: http://keycloak:8080/realms/tpi-backend
+          # ✅ CORREGIDO: Usar variable de entorno directamente
+          issuer-uri: ${ISSUER_URI}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
 
 logging:
   level:
-    org.springframework.cloud.gateway: INFO
-    org.springframework.security: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG

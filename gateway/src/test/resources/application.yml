@@ -9,47 +9,85 @@ spring:
     gateway:
       default-filters:
         - RemoveRequestHeader=Cookie
-      # ... (CORS Configuration) ...
-      server:
-        webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: 'http://localhost:5173, http://localhost:3000'
-                allowedMethods: '*'
-                allowedHeaders: '*'
-                allowCredentials: true
-
-      # 🛣️ RUTA DE PRUEBA:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: 'http://localhost:5173, http://localhost:3000'
+            allowed-methods: '*'
+            allowed-headers: '*'
+            allow-credentials: true
       routes:
+        - id: recursos-service
+          uri: lb://recursos
+          predicates:
+            - Path=/api/recursos/**
+
         - id: solicitudes-service
           uri: lb://solicitudes
           predicates:
             - Path=/api/solicitudes/**
+
+        - id: logistica-service
+          uri: lb://logistica
+          predicates:
+            - Path=/api/logistica/**
+
+    loadbalancer:
+      retry:
+        enabled: true
 
   security:
     oauth2:
       client:
         registration:
           keycloak:
-            provider: keycloak
             client-id: tpi-backend-client
-            authorization-grant-type: authorization_code
-            # Esta URL de redirección es la que usa el navegador, se mantiene en localhost
-            redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
+            client-secret: ''
             scope: openid, profile, email
-
+            authorization-grant-type: authorization_code
+            redirect-uri: '{baseUrl}/login/oauth2/code/keycloak'
         provider:
           keycloak:
-            # 💡 FIX CRÍTICO: Debe coincidir con KC_HOSTNAME_URL para que Spring inicie.
-            issuer-uri: http://host.docker.internal:8180/realms/tpi-backend
+            # ✅ URL interna del contenedor Keycloak
+            issuer-uri: http://keycloak:8080/realms/tpi-backend
+            user-name-attribute: preferred_username
 
       resourceserver:
         jwt:
-          # 💡 FIX CRÍTICO: Debe coincidir con KC_HOSTNAME_URL para que Spring inicie.
-          issuer-uri: http://host.docker.internal:8180/realms/tpi-backend
+          # ✅ Mismo issuer-uri que client provider
+          issuer-uri: http://keycloak:8080/realms/tpi-backend
+          jwk-set-uri: http://keycloak:8080/realms/tpi-backend/protocol/openid-connect/certs
 
+  # Configuración para reintentos de conexión
+  config:
+    import: optional:file:.env[.properties]
+
+  # Retry configuration for Keycloak connection
+  retry:
+    keycloak:
+      max-attempts: 10
+      initial-interval: 2000
+      multiplier: 1.5
+      max-interval: 10000
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
+# Configuración de logging para debugging
 logging:
   level:
-    org.springframework.cloud.gateway: INFO
-    org.springframework.security: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: DEBUG
+    ar.edu.utn.frc.backend: DEBUG
+    org.springframework.retry: DEBUG
+    org.springframework.boot.autoconfigure.security.oauth2: DEBUG
