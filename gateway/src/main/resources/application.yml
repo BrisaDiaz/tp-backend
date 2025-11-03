@@ -7,53 +7,45 @@ spring:
 
   cloud:
     gateway:
-      httpclient:
-        connect-timeout: 30000
-        response-timeout: 60s
-      default-filters:
-        - RemoveRequestHeader=Cookie
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origins: 'http://localhost:5173, http://localhost:3000'
-            allowed-methods: '*'
-            allowed-headers: '*'
-            allow-credentials: true
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: 'http://localhost:5173,http://localhost:3000'
+                allowed-methods: '*'
+                allowed-headers: '*'
+                allow-credentials: true
       routes:
-        - id: recursos-service
-          uri: lb://recursos
+        - id: recursos
+          uri: http://recursos:8081
           predicates:
             - Path=/api/recursos/**
+          filters:
+            - StripPrefix=1
 
-        - id: solicitudes-service
-          uri: lb://solicitudes
+        - id: solicitudes
+          uri: http://solicitudes:8082
           predicates:
             - Path=/api/solicitudes/**
+          filters:
+            - StripPrefix=1
 
-        - id: logistica-service
-          uri: lb://logistica
+        - id: logistica
+          uri: http://logistica:8083
           predicates:
             - Path=/api/logistica/**
+          filters:
+            - StripPrefix=1
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          # ✅ CORREGIDO: Usar variable de entorno directamente
-          issuer-uri: ${ISSUER_URI}
+          issuer-uri: http://localhost:8180/realms/tpi-backend
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: always
-      show-components: always
-
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
+        include: health,info

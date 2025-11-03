@@ -89,16 +89,16 @@ public class CamionService {
     @Transactional
     public Optional<CamionDto> setCamionOcupado(Integer id) {
         return camionRepository.findById(id).map(camion -> {
-            camion.liberar();
+            camion.ocupar();
             return modelMapper.map(camionRepository.save(camion), CamionDto.class);
         });
     }
 
-    // Marcar camión como libre
+    // Marcar camión como libre  
     @Transactional
     public Optional<CamionDto> setCamionLibre(Integer id) {
         return camionRepository.findById(id).map(camion -> {
-            camion.ocupar();
+            camion.liberar();
             return modelMapper.map(camionRepository.save(camion), CamionDto.class);
         });
     }

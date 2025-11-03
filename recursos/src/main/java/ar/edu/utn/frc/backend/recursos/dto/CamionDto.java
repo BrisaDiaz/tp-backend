@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.backend.recursos.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -39,4 +40,15 @@ public class CamionDto {
     @NotBlank(message = "El teléfono del transportista es obligatorio.")
     @Size(max = 20, message = "El teléfono del transportista no puede exceder los 20 caracteres.")
     private String telefonoTransportista;
+
+    @Column(name = "disponibilidad", nullable = true)
+    private Boolean disponibilidad = true;
+
+    public void ocupar() {
+        this.disponibilidad = false;
+    }
+
+    public void liberar() {
+        this.disponibilidad = true;
+    }
 }

@@ -45,9 +45,9 @@ public class CamionController {
         return ResponseEntity.ok().body(camiones);
     }
 
-    // Obtener camión por ID
+    // Obtener camión por ID 
     @GetMapping("/{camionId}")
-    public ResponseEntity<CamionDto> obtenerCamionPorId(@RequestParam Integer camionId) {
+    public ResponseEntity<CamionDto> obtenerCamionPorId(@PathVariable Integer camionId) {
         return camionService.buscarPorId(camionId)
                 .map(camionDto -> ResponseEntity.ok().body(camionDto))
                 .orElse(ResponseEntity.notFound().build());
@@ -71,7 +71,9 @@ public class CamionController {
 
     // Actualizar camión existente
     @PutMapping("/{camionId}")
-    public ResponseEntity<CamionDto> actualizarCamion(@RequestParam Integer camionId, CamionDto camionDto) {
+    public ResponseEntity<CamionDto> actualizarCamion(
+        @PathVariable Integer camionId, 
+        @Valid @RequestBody CamionDto camionDto) {
         return camionService.actualizarCamion(camionId, camionDto)
                 .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
                 .orElse(ResponseEntity.notFound().build());
@@ -101,5 +103,4 @@ public class CamionController {
                 .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
                 .orElse(ResponseEntity.notFound().build());
     }
-
 }
