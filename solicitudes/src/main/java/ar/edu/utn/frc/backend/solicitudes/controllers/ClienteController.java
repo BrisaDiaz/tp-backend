@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/clientes")
-public class ClineteController {
+public class ClienteController {
     @Autowired
     ClienteService clienteService;
 

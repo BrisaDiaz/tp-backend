@@ -1,6 +1,8 @@
 package ar.edu.utn.frc.backend.recursos.services;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,12 @@ public class CiudadService {
     public Optional<CiudadDto> buscarPorId(Integer id) {
         return ciudadRepository.findById(id)
                 .map(ciudad -> modelMapper.map(ciudad, CiudadDto.class));
+    }
+
+    public List<CiudadDto> buscarTodasLasCiudades() {
+        return ciudadRepository.findAll().stream()
+                .map(ciudad -> modelMapper.map(ciudad, CiudadDto.class))
+                .collect(Collectors.toList());
     }
 
     // Actualizar ciudad existente

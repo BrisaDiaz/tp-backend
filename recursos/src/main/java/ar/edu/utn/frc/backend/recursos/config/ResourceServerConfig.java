@@ -27,23 +27,40 @@ public class ResourceServerConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                // ✅ CORREGIDO: Usar requestMatchers correctos
+                // Rutas públicas (actuator)
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
-                // ✅ CORREGIDO: Rutas correctas para la API
-                .requestMatchers(HttpMethod.GET, "/api/camiones/**").hasAnyRole("ADMIN", "CLIENTE", "TRANSPORTISTA")
+                
+                // === RECURSOS (todas las acciones requieren ADMIN) ===
+                
+                // Camiones
+                .requestMatchers(HttpMethod.GET, "/api/camiones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/camiones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/camiones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/camiones/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/depositos/**").hasAnyRole("ADMIN", "CLIENTE", "TRANSPORTISTA")
+                
+                // Depósitos
+                .requestMatchers(HttpMethod.GET, "/api/depositos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/depositos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/depositos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/depositos/**").hasRole("ADMIN")
+                
+                // Ciudades (NUEVO)
+                .requestMatchers(HttpMethod.GET, "/api/ciudades/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/ciudades/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/ciudades/**").hasRole("ADMIN")
+                
+                // Tarifas (NUEVO)
+                .requestMatchers(HttpMethod.GET, "/api/tarifas/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/tarifas/**").hasRole("ADMIN")
+
                 // Cualquier otra ruta requiere autenticación
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
             )
-            .csrf(csrf -> csrf.disable()); // ✅ IMPORTANTE: Deshabilitar CSRF para APIs
+            .csrf(csrf -> csrf.disable()); // Deshabilitar CSRF para APIs
 
         return http.build();
     }
@@ -53,7 +70,7 @@ public class ResourceServerConfig {
         return jwt -> {
             Map<String, Object> realmAccess = jwt.getClaim("realm_access");
             
-            // ✅ CORREGIDO: Manejo seguro de roles
+            // Manejo seguro de roles
             List<GrantedAuthority> authorities = List.of();
             
             if (realmAccess != null && realmAccess.get("roles") instanceof List) {
