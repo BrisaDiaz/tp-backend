@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.backend.solicitudes.controllers;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,14 @@ import jakarta.validation.Valid;
 public class ClienteController {
     @Autowired
     ClienteService clienteService;
+
+    // Obtener todos los clientes
+	@GetMapping // Mapea a /api/clientes
+	@PreAuthorize("hasRole('ADMIN')") // Requiere rol ADMIN para listar todos los clientes
+	public ResponseEntity<List<ClienteDto>> buscarTodosLosClientes() {
+		List<ClienteDto> clientes = clienteService.buscarTodos();
+		return ResponseEntity.ok(clientes);
+	}
 
     // Dar de alta un cliente
     @PostMapping

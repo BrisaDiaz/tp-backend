@@ -40,7 +40,7 @@ public class CiudadService {
                 .map(ciudad -> modelMapper.map(ciudad, CiudadDto.class));
     }
 
-    public List<CiudadDto> buscarTodasLasCiudades() {
+    public List<CiudadDto> buscarTodos() {
         return ciudadRepository.findAll().stream()
                 .map(ciudad -> modelMapper.map(ciudad, CiudadDto.class))
                 .collect(Collectors.toList());

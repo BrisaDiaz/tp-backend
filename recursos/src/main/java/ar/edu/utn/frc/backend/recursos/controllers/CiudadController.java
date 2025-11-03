@@ -30,7 +30,7 @@ public class CiudadController {
     @GetMapping
     public ResponseEntity<List<CiudadDto>> obtenerTodasLasCiudades() {
         // Asumiendo que CiudadService tiene un método para buscar todas (se agrega abajo)
-        List<CiudadDto> ciudades = ciudadService.buscarTodasLasCiudades();
+        List<CiudadDto> ciudades = ciudadService.buscarTodos();
         return ResponseEntity.ok(ciudades);
     }
 

@@ -4,12 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ar.edu.utn.frc.backend.solicitudes.dto.ClienteDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.DepositoDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.HistoricoEstadoContenedorDto;
@@ -166,7 +168,15 @@ public class SolicitudTransporteService {
     // Buscar una solicitud por ID
     public Optional<SolicitudTransporteDto> buscarPorId(Integer id) {
         return solicitudRepository.findById(id)
-            .map(this::mapearADto);
+                .map(this::mapearADto);
+    }
+    
+    // buscar todos los solicitudes
+    public List<SolicitudTransporteDto> buscarTodos() {
+        List<SolicitudTransporte> solicitudes = solicitudRepository.findAll();
+        return solicitudes.stream()
+               .map(this::mapearADto)
+            .collect(Collectors.toList());
     }
 
     // Buscar solicitudes por estado

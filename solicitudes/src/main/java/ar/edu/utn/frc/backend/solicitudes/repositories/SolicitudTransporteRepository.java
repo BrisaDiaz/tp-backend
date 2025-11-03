@@ -12,6 +12,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolicitudTransporteRepository extends JpaRepository<SolicitudTransporte, Integer> {
 
-    @Query("SELECT s FROM solicitudes_transporte s JOIN s.estado e WHERE e.nombre = :nombreEstado")
+    @Query("SELECT s FROM SolicitudTransporte s JOIN s.estado e WHERE e.nombre = :nombreEstado")
     List<SolicitudTransporte> findByEstadoNombre(@Param("nombreEstado") String nombreEstado);
 }

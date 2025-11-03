@@ -3,7 +3,9 @@ package ar.edu.utn.frc.backend.solicitudes.services;
 import ar.edu.utn.frc.backend.solicitudes.repositories.ClienteRepository;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,14 @@ public class ClienteService {
     public Optional<ClienteDto> buscarPorId(Integer id) {
         Optional<Cliente> clienteOpt = clienteRepository.findById(id);
         return clienteOpt.map(cliente -> modelMapper.map(cliente, ClienteDto.class));
+    }
+
+    // buscar todos los clientes
+    public List<ClienteDto> buscarTodos() {
+        List<Cliente> clientes = clienteRepository.findAll();
+        return clientes.stream()
+                .map(cliente -> modelMapper.map(cliente, ClienteDto.class))
+                .collect(Collectors.toList());
     }
 
     // Actualizar un cliente existente

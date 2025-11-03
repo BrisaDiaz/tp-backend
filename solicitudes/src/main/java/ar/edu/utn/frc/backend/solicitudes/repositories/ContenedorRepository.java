@@ -11,12 +11,14 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ContenedorRepository extends JpaRepository<Contenedor, Integer>{
-    @Query("SELECT c FROM contenedor c JOIN c.estadoActual e WHERE e.nombre = :nombreEstado")
+    
+    // CORRECCIÓN: Se cambió 'contenedor' (nombre de tabla) por 'Contenedor' (nombre de la Entidad Java)
+    @Query("SELECT c FROM Contenedor c JOIN c.estadoActual e WHERE e.nombre = :nombreEstado")
     List<Contenedor> findByEstadoNombre(@Param("nombreEstado") String nombreEstado);
 
     @Query(value = "SELECT c.* FROM contenedor c " +
                    "JOIN solicitudes_transporte s ON c.id = s.id_contenedor " +
                    "WHERE s.id_cliente = :idCliente",
-           nativeQuery = true)
+             nativeQuery = true)
     List<Contenedor> findBySolicitudClienteId(@Param("idCliente") Integer idCliente);
 }

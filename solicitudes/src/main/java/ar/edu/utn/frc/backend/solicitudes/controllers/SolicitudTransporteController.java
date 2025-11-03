@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransporteDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.HistoricoEstadoContenedorDto;
 import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransporteDto;
@@ -28,6 +29,13 @@ import jakarta.validation.Valid;
 public class SolicitudTransporteController {
     @Autowired
     private SolicitudTransporteService solicitudTransporteService;
+
+    @GetMapping // Mapea a /api/clientes
+	@PreAuthorize("hasRole('ADMIN')") // Requiere rol ADMIN para listar todos los clientes
+	public ResponseEntity<List<SolicitudTransporteDto>> buscarTodosLasSolicitudTransportes() {
+		List<SolicitudTransporteDto> clientes = solicitudTransporteService.buscarTodos(); // Asume que este método existe en el Service
+		return ResponseEntity.ok(clientes);
+	}
 
     // Obtener una solicitud de transporte por ID
     @GetMapping("/{id}")
