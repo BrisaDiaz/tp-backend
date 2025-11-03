@@ -1,9 +1,3 @@
--- ##########################################################################
--- SCRIPT DE INSERCIÓN DE DATOS DE PRUEBA (SEED DATA)
--- TABLAS: ciudad, precio_combustible, cargo_gestion, deposito, camion
--- ##########################################################################
-
-
 -- ==========================================================================
 -- 1. INSERCIÓN DE CIUDADES
 -- (Necesario para que la tabla 'deposito' pueda hacer referencia a ellas)
@@ -148,3 +142,31 @@ INSERT INTO camion (
 
 -- 8. Camión Cisterna (Especializado)
 ('HHU-234', 50.00, 20000.00, 11.50, 0.30, 'FríoMax S.R.L.', '+5491177788899', TRUE);
+
+
+-- ==========================================================================
+-- 1. INSERCIÓN DE CLIENTES
+-- ==========================================================================
+
+INSERT INTO cliente (auth_id, nombre, apellido, email, telefono, dni) VALUES
+(
+    'a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6', -- ID de Keycloak para 'cliente01'
+    'Carla',
+    'Gómez',
+    'cliente01@example.com',
+    '+5493512223333',
+    '28123456'
+),
+(
+    'c7d8e9f0-f1a2-48b9-c0d1-e2f3a4b5c6d7', -- ID de Keycloak para 'cliente02'
+    'Juan',
+    'Pérez',
+    'cliente02@example.com',
+    '+5493514445555',
+    '30654321'
+);
+
+-- ==========================================================================
+-- 2. FINALIZAR TRANSACCIÓN Y PERSISTIR DATOS
+-- ==========================================================================
+COMMIT;

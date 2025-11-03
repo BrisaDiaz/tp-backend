@@ -1,8 +1,6 @@
-Perfecto! Veo que los microservicios están configurados correctamente con `tpi-backend`. El problema era solo en el README. Aquí está el README actualizado:
-
 # 📚 Guía de Inicio y Autenticación del Backend
 
-Este documento proporciona los pasos necesarios para levantar el entorno de microservicios mediante Docker Compose y obtener un `access_token` válido desde Keycloak.
+Este documento proporciona los pasos necesarios para levantar el entorno de microservicios mediante Docker Compose y obtener un `access_token` válido.
 
 ## 1. 🚀 Inicio del Entorno (Docker Compose)
 
@@ -14,61 +12,67 @@ Ejecuta los siguientes comandos para construir las imágenes y levantar todos lo
 
 - **Construir las imágenes:**
 
-  ```bash
-  docker compose build
-  ```
+```bash
+docker compose build
+```
 
 - **Iniciar los servicios:**
-  ```bash
-  docker compose up -d
-  ```
+
+<!-- end list -->
+
+```bash
+docker compose up -d
+```
 
 ---
 
-## 2. 🌐 Acceso a los Servicios Web
+## 2\. 🌐 Acceso a los Servicios Web
 
 Una vez que los contenedores estén levantados, puedes acceder a las interfaces de gestión:
 
-| Servicio                           | URL de Acceso                                      | Credenciales de Acceso (Iniciales)                        |
-| :--------------------------------- | :------------------------------------------------- | :-------------------------------------------------------- |
-| **Keycloak** (Autenticación)       | `http://localhost:8180/admin/master/console/`      | **Usuario:** `admin` / **Contraseña:** `admin123`         |
-| **Keycloak Realm TPI**             | `http://localhost:8180/admin/tpi-backend/console/` | Usar usuarios creados (ver tabla abajo)                   |
-| **PgAdmin** (Gestión de DB)        | `http://localhost:5050/`                           | **Email:** `admin@admin.com` / **Contraseña:** `admin123` |
-| **API Gateway** (Punto de Entrada) | `http://localhost:8080/`                           | Requiere autenticación JWT                                |
-| **Servicio Recursos**              | `http://localhost:8082/`                           | Requiere autenticación JWT                                |
-| **Servicio Solicitudes**           | `http://localhost:8083/`                           | Requiere autenticación JWT                                |
-| **Servicio Logística**             | `http://localhost:8084/`                           | Requiere autenticación JWT                                |
+| Servicio                            | URL de Acceso                                       | Credenciales de Acceso (Iniciales)                         |
+| :---------------------------------- | :-------------------------------------------------- | :--------------------------------------------------------- |
+| **Keycloak** (Autenticación)        | `http://localhost:8180/admin/master/console/`       | **Usuario:** `admin` / **Contraseña:** `admin123`          |
+| **Keycloak Realm TPI**              | `http://localhost:8180/admin/tpi-backend/console/`  | Usar usuarios creados (ver tabla abajo)                    |
+| **PgAdmin** (Gestión de DB)         | `http://localhost:5050/`                            | **Email:** `admin@admin.com` / **Contraseña:** `admin123`  |
+| **API Gateway** (Punto de Entrada)  | `http://localhost:8080/`                            | Requiere autenticación JWT                                 |
+| **Servicio Recursos**               | `http://localhost:8082/`                            | Requiere autenticación JWT                                 |
+| **Servicio Solicitudes**            | `http://localhost:8083/`                            | Requiere autenticación JWT                                 |
+| **Servicio Logística**              | `http://localhost:8084/`                            | Requiere autenticación JWT                                 |
 
 ---
 
-## 3. 👥 Usuarios Pre-configurados
+## 3\. 👥 Usuarios Pre-configurados
 
 **Realm:** `tpi-backend`
 
-| Usuario             | Email                         | Contraseña | Rol             | Descripción               |
+| Usuario             | Email                         | Contraseña | Rol             | Descripción               |
 | :------------------ | :---------------------------- | :--------- | :-------------- | :------------------------ |
-| **admin01**         | `admin01@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
-| **admin02**         | `admin02@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
-| **cliente01**       | `cliente01@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
-| **cliente02**       | `cliente02@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
-| **transportista01** | `transportista01@example.com` | `Clave123` | `transportista` | Usuario transportista     |
-| **transportista02** | `transportista02@example.com` | `Clave123` | `transportista` | Usuario transportista     |
+| **admin01**         | `admin01@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
+| **admin02**         | `admin02@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
+| **cliente01**       | `cliente01@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
+| **cliente02**       | `cliente02@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
+| **transportista01** | `transportista01@example.com` | `Clave123` | `transportista` | Usuario transportista     |
+| **transportista02** | `transportista02@example.com` | `Clave123` | `transportista` | Usuario transportista     |
 
 ---
 
-## 4. 🗝️ Obtener un `access_token`
+## 4\. 🗝️ Obtener un `access_token` a través del Gateway (RECOMENDADO)
 
-Para acceder a las APIs protegidas, necesitas obtener un `access_token` de Keycloak.
+Para acceder a las APIs protegidas, obtén un `access_token` a través del endpoint proxy del **API Gateway**. El Gateway se encarga de realizar el intercambio de credenciales con Keycloak.
 
-### Método 1: Flujo Directo (Password Grant) - RECOMENDADO
+### Método Único: Flujo Simplificado (Password Grant) a través del GATEWAY
+
+Utiliza el endpoint `/auth/token` del Gateway enviando solo el nombre de usuario y la contraseña en el cuerpo.
 
 ```bash
-curl -X POST http://localhost:8180/realms/tpi-backend/protocol/openid-connect/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=cliente01&password=Clave123&grant_type=password&client_id=tpi-backend-client"
+# Ejemplo de solicitud usando el usuario 'admin01'
+curl -X POST 'http://localhost:8080/auth/token' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=admin01&password=Clave123'
 ```
 
-**Ejemplo de Respuesta:**
+**Ejemplo de Respuesta (JSON):**
 
 ```json
 {
@@ -80,56 +84,52 @@ curl -X POST http://localhost:8180/realms/tpi-backend/protocol/openid-connect/to
 }
 ```
 
-### Método 2: Flujo de Código de Autorización
+---
 
-#### Paso 1: Obtener Código
+## 5\. 🛠️ Conexión a la Base de Datos (pgAdmin)
 
-Navega a:
+Para administrar la base de datos PostgreSQL, accede a pgAdmin (`http://localhost:5050/`) e introduce los siguientes parámetros de conexión:
 
-```
-http://localhost:8180/realms/tpi-backend/protocol/openid-connect/auth?client_id=tpi-backend-client&response_type=code&redirect_uri=http://localhost:8080/login/oauth2/code/keycloak
-```
+| Campo de Conexión                | Valor                                                   | Descripción                                                                                                               |
+| :------------------------------- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ |
+| **Server Name**                  | `tp-backend`                                            | Nombre descriptivo del servidor.                                                                                          |
+| **Nombre/Dirección de servidor** | `postgres`                                              | **Nombre del servicio de Docker Compose** (no `localhost` ni la IP externa, ya que pgAdmin está dentro de la red Docker). |
+| **Puerto**                       | `5432`                                                  | Puerto interno predeterminado de PostgreSQL.                                                                              |
+| **Base de Datos**                | `mydatabase`                                            | Nombre de la base de datos.                                                                                               |
+| **Usuario**                      | `myuser`                                                | Usuario de la base de datos.                                                                                              |
+| **Contraseña**                   | _La contraseña configurada en el `docker-compose.yml`._ | (Generalmente se pide en una pestaña separada).                                                                           |
 
-#### Paso 2: Intercambiar Código por Token
-
-```http
-POST http://localhost:8180/realms/tpi-backend/protocol/openid-connect/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=authorization_code
-code=<el_code_recibido>
-client_id=tpi-backend-client
-redirect_uri=http://localhost:8080/login/oauth2/code/keycloak
-```
+> ℹ️ **Nota:** Si tu instancia de pgAdmin estuviera corriendo fuera de Docker, la dirección del servidor debería ser `localhost` o `127.0.0.1` (o la IP del host) y el puerto sería el mapeado externamente (ej: `5432`). Pero como pgAdmin está en el mismo `docker-compose.yml`, usa el **nombre del servicio: `postgres`**.
 
 ---
 
-## 5. 🔐 Usar el `access_token`
+## 6\. 🔐 Usar el `access_token`
 
-Una vez obtenido el token, úsalo en la cabecera **`Authorization`**:
+Una vez obtenido el token, úsalo en la cabecera **`Authorization`** para acceder a los microservicios a través del Gateway:
 
 ```bash
+# Ejemplo de acceso a un endpoint protegido
 curl -H "Authorization: Bearer <access_token>" http://localhost:8080/api/recursos/camiones
 ```
 
-| Cabecera          | Valor                            |
-| :---------------- | :------------------------------- |
-| **Authorization** | `Bearer <access_token_extraido>` |
+| Cabecera           | Valor                             |
+| :----------------- | :-------------------------------- |
+| **Authorization**  | `Bearer <access_token_extraido>`  |
 
 ---
 
-## 6. 📊 Estructura de Microservicios
+## 7\. 📊 Estructura de Microservicios
 
-| Servicio        | Puerto Interno | Puerto Externo | Descripción                          |
-| :-------------- | :------------- | :------------- | :----------------------------------- |
-| **Gateway**     | 8080           | 8080           | API Gateway - Punto de entrada único |
-| **Recursos**    | 8081           | 8082           | Gestión de camiones y contenedores   |
-| **Solicitudes** | 8082           | 8083           | Gestión de solicitudes de transporte |
-| **Logística**   | 8083           | 8084           | Planificación de rutas y logística   |
+| Servicio         | Puerto Interno | Puerto Externo | Descripción                           |
+| :--------------- | :------------- | :------------- | :------------------------------------ |
+| **Gateway**      | 8080           | 8080           | API Gateway - Punto de entrada único  |
+| **Recursos**     | 8081           | 8082           | Gestión de camiones y contenedores    |
+| **Solicitudes**  | 8082           | 8083           | Gestión de solicitudes de transporte  |
+| **Logística**    | 8083           | 8084           | Planificación de rutas y logística    |
 
 ---
 
-## 7. 🛠️ Comandos Útiles
+## 8\. ⚙️ Comandos Útiles de Docker Compose
 
 ### Ver estado de los contenedores:
 
@@ -159,7 +159,7 @@ docker compose down
 
 ---
 
-## 8. 🔍 Verificación del Sistema
+## 9\. 🔍 Verificación y Debugging
 
 ### Probar servicios individualmente (sin Gateway):
 
@@ -174,7 +174,7 @@ curl -H "Authorization: Bearer <token>" http://localhost:8083/actuator/health
 curl -H "Authorization: Bearer <token>" http://localhost:8084/actuator/health
 ```
 
-### Verificar base de datos:
+### Verificar base de datos (por consola):
 
 ```bash
 # Conectar a PostgreSQL
@@ -183,12 +183,12 @@ docker exec -it postgres psql -U myuser -d mydatabase
 
 ---
 
-## 9. ❌ Solución de Problemas
+## 10\. ❌ Solución de Problemas
 
 ### Error 401 en endpoints:
 
 - **Causa:** Token inválido, expirado o faltante
-- **Solución:** Obtener un nuevo token válido
+- **Solución:** Obtener un nuevo token válido (Sección 4).
 
 ### Error de conexión a Keycloak:
 
@@ -198,7 +198,7 @@ docker exec -it postgres psql -U myuser -d mydatabase
 ### Usuario/contraseña incorrectos:
 
 - **Causa:** Credenciales erróneas
-- **Solución:** Usar las credenciales de la tabla de usuarios
+- **Solución:** Usar las credenciales de la tabla de usuarios (Sección 3).
 
 ### Error "Realm does not exist":
 
@@ -208,3 +208,7 @@ docker exec -it postgres psql -U myuser -d mydatabase
 ---
 
 **✅ El sistema está configurado correctamente.** El error 401 en los endpoints es normal e indica que la autenticación está funcionando. Obtén un token siguiendo los pasos anteriores para acceder a las APIs.
+
+```eof
+
+```

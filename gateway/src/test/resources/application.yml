@@ -49,13 +49,13 @@ spring:
         provider:
           keycloak:
             # ✅ URL interna del contenedor Keycloak
-            issuer-uri: http://localhost:8180/realms/tpi-backend
+            issuer-uri: http://keycloak:8080/realms/tpi-backend
             user-name-attribute: preferred_username
 
       resourceserver:
         jwt:
           # ✅ Mismo issuer-uri que client provider
-          issuer-uri: http://localhost:8180/realms/tpi-backend
+          issuer-uri: http://keycloak:8080/realms/tpi-backend
           jwk-set-uri: http://localhost:8180/realms/tpi-backend/protocol/openid-connect/certs
 
   # Configuración para reintentos de conexión

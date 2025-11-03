@@ -4,6 +4,11 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://keycloak:8080/realms/tpi-backend
+keycloak:
+  url: http://keycloak:8080
+  realm: tpi-backend
+  client-id: tpi-backend-client
+  client-secret: lXoTXz4pnpSYGeNMd2iqN0VrqiwG2Q4A
 
 logging:
   level:

@@ -42,7 +42,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/tpi-backend
+          issuer-uri: http://keycloak:8080/realms/tpi-backend
 
 management:
   endpoints:

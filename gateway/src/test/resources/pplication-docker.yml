@@ -5,11 +5,11 @@ spring:
       resourceserver:
         jwt:
           # En Docker, usar la URL interna del servicio
-          issuer-uri: http://localhost:8180/realms/tpi-backend
+          issuer-uri: http://keycloak:8080/realms/tpi-backend
       client:
         provider:
           keycloak:
-            issuer-uri: http://localhost:8180/realms/tpi-backend
+            issuer-uri: http://keycloak:8080/realms/tpi-backend
 
 keycloak:
   auth-server-url: http://keycloak:8080
