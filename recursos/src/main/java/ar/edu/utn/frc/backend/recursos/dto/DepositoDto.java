@@ -36,10 +36,10 @@ public class DepositoDto {
     @DecimalMax(value = "90.0", message = "La latitud debe estar entre -90 y 90.")
     private Float latitud;
 
-    @NotNull(message = "La longitud es obligatoria.")
-    @DecimalMin(value = "-180.0", message = "La longitud debe estar entre -180 y 180.")
-    @DecimalMax(value = "180.0", message = "La longitud debe estar entre -180 y 180.")
-    private Float longitud;
+    @NotNull(message = "La Longitud es obligatoria.")
+    @DecimalMin(value = "-180.0", message = "La Longitud debe estar entre -180 y 180.")
+    @DecimalMax(value = "180.0", message = "La Longitud debe estar entre -180 y 180.")
+    private Float Longitud;
 
     @NotNull(message = "El nombre de la ciudad es obligatorio.")
     @Size(max = 50, message = "El nombre no puede exceder los 50 caracteres.")

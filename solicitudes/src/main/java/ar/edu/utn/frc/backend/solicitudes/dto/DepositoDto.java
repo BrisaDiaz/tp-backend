@@ -14,6 +14,6 @@ public class DepositoDto {
     private String direccion;
     private BigDecimal precioPorDia;
     private Float latitud;
-    private Float longitud;
+    private Float Longitud;
     private String ciudad;
 }

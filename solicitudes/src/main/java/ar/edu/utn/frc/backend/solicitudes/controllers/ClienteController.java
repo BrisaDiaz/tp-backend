@@ -1,6 +1,7 @@
 package ar.edu.utn.frc.backend.solicitudes.controllers;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class ClienteController {
 
     // Actualizar un cliente existente
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.claim('cliente_id')")
+    @PreAuthorize("hasRole('ADMIN') or @clienteService.esPropietario(#id, authentication.tokenAttributes['sub'])")
     public ResponseEntity<ClienteDto> actualizarCliente(
             @PathVariable Integer id,
             @Valid @RequestBody ClienteDto clienteDto) {
@@ -52,7 +53,7 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.claim('cliente_id')")
+    @PreAuthorize("hasRole('ADMIN') or @clienteService.esPropietario(#id, authentication.tokenAttributes['sub'])")
     public ResponseEntity<ClienteDto> buscarClientePorId(@PathVariable Integer id) {
         return clienteService.buscarPorId(id)
                 .map(clienteDto -> ResponseEntity.ok().body(clienteDto))

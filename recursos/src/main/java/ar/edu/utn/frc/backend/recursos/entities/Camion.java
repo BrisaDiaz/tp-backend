@@ -25,6 +25,9 @@ public class Camion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "auth_id", nullable = true, length = 36, unique = true)
+    private String authId;
+
     @Column(name = "dominio", nullable = false, length = 10, unique = true)
     private String dominio;
 

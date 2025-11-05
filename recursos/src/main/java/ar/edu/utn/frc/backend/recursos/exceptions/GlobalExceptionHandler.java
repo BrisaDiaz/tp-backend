@@ -1,9 +1,9 @@
 package ar.edu.utn.frc.backend.recursos.exceptions;
 
-import ar.edu.utn.frc.backend.recursos.dto.error.ErrorResponse;
-import ar.edu.utn.frc.backend.recursos.dto.error.ValidationError;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import ar.edu.utn.frc.backend.recursos.dto.error.ErrorResponse;
+import ar.edu.utn.frc.backend.recursos.dto.error.ValidationError;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {

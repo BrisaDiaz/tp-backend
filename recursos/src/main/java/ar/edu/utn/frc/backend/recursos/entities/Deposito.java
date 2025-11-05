@@ -44,8 +44,8 @@ public class Deposito {
     @Column(name = "latitud", nullable = false)
     private Float latitud;
 
-    @Column(name = "longitud", nullable = false)
-    private Float longitud;
+    @Column(name = "Longitud", nullable = false)
+    private Float Longitud;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ciudad", nullable = false)

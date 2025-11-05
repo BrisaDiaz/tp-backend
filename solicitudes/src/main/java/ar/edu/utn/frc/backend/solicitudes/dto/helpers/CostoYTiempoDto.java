@@ -21,5 +21,5 @@ public class CostoYTiempoDto {
     private BigDecimal costo;
     @NotNull(message = "El tiempo no puede ser nulo")
     @Check(constraints = "tiempo >= 0")
-    private int tiempo;
+    private Long tiempo;
 }

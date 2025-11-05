@@ -19,7 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Permite usar @PreAuthorize a nivel de método (para lógica de propiedad)
+@EnableMethodSecurity // Permite usar @PreAuthorize a nivel de método
 public class ResourceServerConfig {
 
     /**
@@ -32,40 +32,41 @@ public class ResourceServerConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
 
-                // === ZONAS PÚBLICAS ===
-                // Permite el registro de nuevos clientes (POST /clientes), ya que aún no tienen token
-                .requestMatchers(HttpMethod.POST, "/clientes").permitAll()
-                // Otras rutas designadas como públicas
-                .requestMatchers("/publico/**").permitAll()
+                // === 1. RUTAS PUBLICAS (PERMIT ALL) ===
+                
+                // Dar de alta un cliente (Tu requerimiento)
+                .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
+                // Rutas públicas genéricas
+                .requestMatchers("/api/publico/**").permitAll()
 
-                // === ACCESO LOGISTICA (Service-to-Service) ===
-                // 2. Solo Logística puede actualizar estados de Solicitudes y Contenedores
-                .requestMatchers(HttpMethod.PUT, "/solicitudes/{id}/programada").hasRole("LOGISTICA")
-                .requestMatchers(HttpMethod.PUT, "/solicitudes/{id}/en-transito").hasRole("LOGISTICA")
-                .requestMatchers(HttpMethod.PUT, "/solicitudes/{id}/entregada").hasRole("LOGISTICA")
-                .requestMatchers(HttpMethod.PUT, "/solicitudes/{id}/contenedor/**").hasRole("LOGISTICA")
+                // LOGÍSTICA (Actualizaciones de estado que deben ser públicas/internas)
+                .requestMatchers(HttpMethod.PUT, "/api/solicitudes/{id}/programada").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/solicitudes/{id}/en-transito").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/solicitudes/{id}/entregada").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/solicitudes/{id}/contenedor/**").permitAll()
+                
+                // === 2. RUTAS DE CLIENTES AUTENTICADOS (hasRole / authenticated) ===
 
-                // === ACCESO CLIENTE ===
-                // 3. Crear Solicitudes (POST /solicitudes)
-                .requestMatchers(HttpMethod.POST, "/solicitudes").hasRole("CLIENTE")
+                // Creación de Solicitud de envío
+                .requestMatchers(HttpMethod.POST, "/api/solicitudes").hasRole("CLIENTE") 
+                // Lectura de seguimiento, perfil y modificación de perfil (asume que la validación de propiedad se hace en el código)
+                .requestMatchers(HttpMethod.GET, "/api/clientes/{id}").authenticated() 
+                .requestMatchers(HttpMethod.PUT, "/api/clientes/{id}").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/solicitudes/{id}").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/solicitudes/{id}/contenedor/seguimiento").authenticated()
 
-                // 4. Consultas de Clientes (Datos propios, Solicitudes propias, Histórico)
-                // Usamos 'authenticated()' aquí y luego @PreAuthorize en los Controllers
-                // para imponer la restricción de "solo ver lo propio".
-                .requestMatchers(HttpMethod.GET, "/clientes/{id}").authenticated() 
-                .requestMatchers(HttpMethod.PUT, "/clientes/{id}").authenticated() // Cliente puede actualizar sus propios datos
-                .requestMatchers(HttpMethod.GET, "/solicitudes/{id}").authenticated()
-                .requestMatchers(HttpMethod.GET, "/solicitudes/{id}/contenedor/seguimiento").authenticated()
+                // === 3. RUTAS DE ADMINISTRACIÓN (ADMIN) ===
 
-                // === ACCESO ADMIN / GESTIÓN ===
-                // 5. Contenedores: Listados y detalles (Administración)
-                .requestMatchers("/contenedores/**").hasAnyRole("ADMIN", "LOGISTICA") 
-                // 6. Solicitudes: Listado de borradores (Administración)
-                .requestMatchers(HttpMethod.GET, "/solicitudes/borrador").hasRole("ADMIN")
+                // Contenedores
+                .requestMatchers("/api/contenedores/**").hasRole("ADMIN")
+                // Solicitudes en borrador
+                .requestMatchers(HttpMethod.GET, "/api/solicitudes/borrador").hasRole("ADMIN")
 
-                // 7. RESTO: Todas las demás operaciones (Listados generales, PUT/DELETE de Clientes/Solicitudes, etc.)
-                // Quedan restringidas al rol más alto (ADMIN).
+                // === 4. REGLA CATCH-ALL ===
+                
+                // Cualquier otra ruta no especificada arriba requiere el rol ADMIN
                 .anyRequest().hasRole("ADMIN")
+
             )
             .oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

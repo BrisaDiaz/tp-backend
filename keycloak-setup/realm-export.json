@@ -151,6 +151,120 @@
       "clientRoles": {
         "account": ["view-profile", "manage-account"]
       }
+    },
+    {
+      "id": "t3333333-2222-3333-4444-555555555553",
+      "username": "transportista03",
+      "enabled": true,
+      "email": "transportista03@example.com",
+      "firstName": "Javier",
+      "lastName": "Gutiérrez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "id": "t4444444-2222-3333-4444-555555555554",
+      "username": "transportista04",
+      "enabled": true,
+      "email": "transportista04@example.com",
+      "firstName": "Silvia",
+      "lastName": "Díaz",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "id": "t5555555-2222-3333-4444-555555555555",
+      "username": "transportista05",
+      "enabled": true,
+      "email": "transportista05@example.com",
+      "firstName": "Raúl",
+      "lastName": "Ferreyra",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "id": "t6666666-2222-3333-4444-555555555556",
+      "username": "transportista06",
+      "enabled": true,
+      "email": "transportista06@example.com",
+      "firstName": "Andrea",
+      "lastName": "Vázquez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "id": "t7777777-2222-3333-4444-555555555557",
+      "username": "transportista07",
+      "enabled": true,
+      "email": "transportista07@example.com",
+      "firstName": "Pablo",
+      "lastName": "Núñez",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "id": "t8888888-2222-3333-4444-555555555558",
+      "username": "transportista08",
+      "enabled": true,
+      "email": "transportista08@example.com",
+      "firstName": "Micaela",
+      "lastName": "Ríos",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Clave123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
     }
   ]
 }

@@ -1,28 +1,13 @@
 package ar.edu.utn.frc.backend.logistica.entities;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-@Table(name = "solicitudes_transporte")
+@Table(name = "solicitud_transporte")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,24 +16,25 @@ import lombok.ToString;
 @EqualsAndHashCode(exclude = {"estado", "cliente", "contenedor", "depositoOrigen", "depositoDestino"})
 @ToString(exclude = {"estado", "cliente", "contenedor", "depositoOrigen", "depositoDestino"})
 public class SolicitudTransporte {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "fecha_solicitud", nullable = false)
-    private LocalDate fechaSolicitud;
+    private LocalDateTime fechaSolicitud;
 
     @Column(name = "costo_estimado", nullable = true)
     private BigDecimal costoEstimado;
 
     @Column(name = "tiempo_estimado", nullable = true)
-    private int tiempoEstimado; // en segundos
+    private Long tiempoEstimado; // en segundos
 
     @Column(name = "costo_real", nullable = true)
     private BigDecimal costoReal;
 
     @Column(name = "tiempo_real", nullable = true)
-    private int tiempoReal; // en segundos
+    private Long tiempoReal; // en segundos
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_estado", nullable = false)
@@ -70,37 +56,44 @@ public class SolicitudTransporte {
     @JoinColumn(name = "id_deposito_destino", nullable = false)
     private Deposito depositoDestino;
 
-    public String getTiempoEstimadoLegible(int tiempo) {
-        int segundos = tiempo;
-        int dias = segundos / 86400;
+    /**
+     * Devuelve un tiempo en formato legible (días, horas, minutos, segundos).
+     * @param tiempoSegundos duración en segundos
+     * @return representación legible del tiempo
+     */
+    private String formatearTiempoLegible(Long tiempoSegundos) {
+        Long segundos = tiempoSegundos;
+
+        Long dias = segundos / 86400;
         segundos %= 86400;
-        int horas = segundos / 3600;
+
+        Long horas = segundos / 3600;
         segundos %= 3600;
-        int minutos = segundos / 60;
+
+        Long minutos = segundos / 60;
         segundos %= 60;
 
         StringBuilder tiempoLegible = new StringBuilder();
-        if (dias > 0) {
-            tiempoLegible.append(dias).append(" días ");
-        }
-        if (horas > 0) {
-            tiempoLegible.append(horas).append(" horas ");
-        }
-        if (minutos > 0) {
-            tiempoLegible.append(minutos).append(" minutos ");
-        }
-        if (segundos > 0 || tiempoLegible.length() == 0) {
+        if (dias > 0) tiempoLegible.append(dias).append(" días ");
+        if (horas > 0) tiempoLegible.append(horas).append(" horas ");
+        if (minutos > 0) tiempoLegible.append(minutos).append(" minutos ");
+        if (segundos > 0 || tiempoLegible.length() == 0)
             tiempoLegible.append(segundos).append(" segundos");
-        }
 
         return tiempoLegible.toString().trim();
     }
 
+    /**
+     * Devuelve el tiempo estimado en formato legible.
+     */
     public String getTiempoEstimadoLegible() {
-        return getTiempoEstimadoLegible(this.tiempoEstimado);
+        return formatearTiempoLegible(this.tiempoEstimado);
     }
 
+    /**
+     * Devuelve el tiempo real en formato legible.
+     */
     public String getTiempoRealLegible() {
-        return getTiempoEstimadoLegible(this.tiempoReal);
+        return formatearTiempoLegible(this.tiempoReal);
     }
 }

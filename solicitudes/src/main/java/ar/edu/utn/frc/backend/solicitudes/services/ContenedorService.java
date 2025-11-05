@@ -1,11 +1,12 @@
 package ar.edu.utn.frc.backend.solicitudes.services;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import jakarta.annotation.PostConstruct;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import ar.edu.utn.frc.backend.solicitudes.entities.Estado;
 import ar.edu.utn.frc.backend.solicitudes.exceptions.ResourceNotFoundException;
 import ar.edu.utn.frc.backend.solicitudes.repositories.ContenedorRepository;
 import ar.edu.utn.frc.backend.solicitudes.repositories.EstadoRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -25,9 +27,9 @@ public class ContenedorService {
     private static final String ESTADO_EN_DEPOSITO = "En Depósito";
     private static final String ESTADO_ENTREGADO = "Entregado";
     private static final String ESTADO_EN_VIAJE = "En Viaje";
-    private static final String TEMPLATE_DESCRIPCION_PENDIENTE_ENTREGA = "Tu contenedor aún no ha sido retirado.";
-    private static final String TEMPLATE_DESCRIPCION_EN_DEPOSITO = "Tu contenedo ingresó al depósito de %s.";
-    private static final String TEMPLATE_DESCRIPCION_EN_VIAJE = "Tu contenedo salió del depósito de %s y sigue en viaje.";
+    private static final String TEMPLATE_DESCRIPCION_PENDIENTE_ENTREGA = "Tu contenedor esta en espera para ser retirado.";
+    private static final String TEMPLATE_DESCRIPCION_EN_DEPOSITO = "Tu contenedo ingresó al %s.";
+    private static final String TEMPLATE_DESCRIPCION_EN_VIAJE = "Tu contenedo salió de %s y sigue en viaje.";
     private static final String TEMPLATE_DESCRIPCION_ENTREGADO = "Tu contenedor ha llegado a destino.";
 
     @Autowired
@@ -38,6 +40,13 @@ public class ContenedorService {
     private HistoricoEstadoContenedorService historicoEstadoService;
     @Autowired
     private ModelMapper modelMapper;
+
+    @PostConstruct
+	public void setupMapper() {
+		modelMapper.createTypeMap(Contenedor.class, ContenedorDto.class).addMapping(
+				src -> src.getEstadoActual().getNombre(),
+				ContenedorDto::setEstadoActual);
+	}
 
     // Guardar un nuevo contenedor
     public Contenedor guardarContenedor(BigDecimal volumen, BigDecimal peso) {
@@ -57,7 +66,7 @@ public class ContenedorService {
         Contenedor contenedorGuardado = contenedorRepository.save(contenedorEntity);
 
         // 4. Registrar el primer Histórico de Estado
-        LocalDate fechaInicio = LocalDate.now();
+        LocalDateTime fechaInicio = LocalDateTime.now();
 
         historicoEstadoService.crearNuevoHistorico(
                 contenedorGuardado,
@@ -149,7 +158,7 @@ public class ContenedorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Estado", nuevoEstadoNombre));
 
         // ********* LÓGICA CLAVE DE CORRECCIÓN: Manejo de Histórico *********
-        LocalDate ahora = LocalDate.now();
+        LocalDateTime ahora = LocalDateTime.now();
 
         // 2. Cerrar el histórico anterior
         historicoEstadoService.cerrarHistoricoAnterior(contenedor.getId(), ahora);

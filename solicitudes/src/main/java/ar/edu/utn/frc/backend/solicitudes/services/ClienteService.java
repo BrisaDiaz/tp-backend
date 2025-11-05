@@ -1,8 +1,5 @@
 package ar.edu.utn.frc.backend.solicitudes.services;
 
-import ar.edu.utn.frc.backend.solicitudes.repositories.ClienteRepository;
-import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import ar.edu.utn.frc.backend.solicitudes.dto.ClienteDto;
 import ar.edu.utn.frc.backend.solicitudes.entities.Cliente;
+import ar.edu.utn.frc.backend.solicitudes.repositories.ClienteRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class ClienteService {
@@ -66,4 +65,24 @@ public class ClienteService {
         }
         return false;
     }
+
+    public boolean esPropietario(Integer clienteId, String sub) {
+        // 1. Verificar si el token 'sub' es nulo o vacío
+        if (sub == null || sub.isEmpty()) {
+            return false;
+        }
+
+        // 2. Buscar el cliente. Si no se encuentra (Optional.isEmpty), retornar false, NO lanzar excepción.
+        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
+        if (clienteOpt.isEmpty()) {
+            return false; 
+        }
+
+        Cliente cliente = clienteOpt.get();
+
+        // 3. Comparar el ID de autenticación del token con el ID del cliente
+        // Asumiendo que el campo de autenticación en la entidad Cliente se llama 'authId'
+        return sub.equals(cliente.getAuthId());
+    }
+
 }

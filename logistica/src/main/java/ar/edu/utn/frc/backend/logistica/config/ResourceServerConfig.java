@@ -29,10 +29,14 @@ public class ResourceServerConfig {
                 // Público
                 .requestMatchers("/publico/**").permitAll()
                 // Solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/rutas/**").hasRole("ADMIN")
-                // Solo TRANSPORTISTA
-                .requestMatchers(HttpMethod.POST, "/tramos/{id}/iniciado").hasRole("TRANSPORTISTA")
-                .requestMatchers(HttpMethod.POST, "/tramos/{id}/iniciado").hasRole("TRANSPORTISTA")
+                .requestMatchers(HttpMethod.POST, "/rutas/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/rutas/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/tramos/{id}/asignado").hasRole("ADMIN")
+                // Solo TRANSPORTISTA puede ver sus propios tramos asignados
+                .requestMatchers(HttpMethod.GET, "/tramos/asignado/{camionId}").hasRole("TRANSPORTISTA")
+                // Solo TRANSPORTISTA puede iniciar/finalizar sus propios tramos
+                .requestMatchers(HttpMethod.PUT, "/tramos/{id}/iniciado").hasRole("TRANSPORTISTA")
+                .requestMatchers(HttpMethod.PUT, "/tramos/{id}/finalizado").hasRole("TRANSPORTISTA")
                 // Resto requiere autenticación
                 .anyRequest().authenticated()
             )

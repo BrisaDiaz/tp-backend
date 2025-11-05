@@ -20,11 +20,10 @@ public class TramoDto {
     BigDecimal costoReal;
     LocalDateTime fechaHoraInicio;
     LocalDateTime fechaHoraFin;
-    Integer tiempoEstimadoSegundos;
-    Integer tiempoRealSegundos;
+    Long tiempoEstimadoSegundos;
+    Long tiempoRealSegundos;
     Float distanciaKilometros;
     String nombreEstado;
     String tipoTramo;
     CamionDto camion;
-    RutaDto ruta;
 }

@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.backend.solicitudes.dto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,10 +27,10 @@ public class HistoricoEstadoContenedorDto {
 
     @NotNull(message = "La fecha y hora de inicio del estado es obligatoria.")
     @PastOrPresent(message = "La fecha de inicio no puede ser futura.")
-    private LocalDate fechaHoraDesde;
+    private LocalDateTime fechaHoraDesde;
 
     @PastOrPresent(message = "La fecha de fin no puede ser futura.")
-    private LocalDate fechaHoraHasta;
+    private LocalDateTime fechaHoraHasta;
 
     @NotBlank(message = "La descripción del cambio de estado es obligatoria.")
     private String descripcion;

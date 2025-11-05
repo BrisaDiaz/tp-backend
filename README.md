@@ -97,7 +97,7 @@ Para administrar la base de datos PostgreSQL, accede a pgAdmin (`http://localhos
 | **Puerto**                       | `5432`                                                  | Puerto interno predeterminado de PostgreSQL.                                                                              |
 | **Base de Datos**                | `mydatabase`                                            | Nombre de la base de datos.                                                                                               |
 | **Usuario**                      | `myuser`                                                | Usuario de la base de datos.                                                                                              |
-| **Contraseña**                   | _La contraseña configurada en el `docker-compose.yml`._ | (Generalmente se pide en una pestaña separada).                                                                           |
+| **Contraseña**                   | `secret`                              | (Generalmente se pide en una pestaña separada).                                                                           |
 
 > ℹ️ **Nota:** Si tu instancia de pgAdmin estuviera corriendo fuera de Docker, la dirección del servidor debería ser `localhost` o `127.0.0.1` (o la IP del host) y el puerto sería el mapeado externamente (ej: `5432`). Pero como pgAdmin está en el mismo `docker-compose.yml`, usa el **nombre del servicio: `postgres`**.
 

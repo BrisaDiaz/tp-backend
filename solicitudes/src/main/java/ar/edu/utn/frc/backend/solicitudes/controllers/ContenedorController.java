@@ -6,15 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.utn.frc.backend.solicitudes.dto.ContenedorDto;
-import ar.edu.utn.frc.backend.solicitudes.dto.helpers.InfoDepositoDto;
 import ar.edu.utn.frc.backend.solicitudes.services.ContenedorService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/contenedores")

@@ -1,23 +1,25 @@
 package ar.edu.utn.frc.backend.solicitudes.exceptions;
 
-import ar.edu.utn.frc.backend.solicitudes.dto.error.ErrorResponse;
-import ar.edu.utn.frc.backend.solicitudes.dto.error.ValidationError;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException; // IMPORTANTE: Nueva importación
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import ar.edu.utn.frc.backend.solicitudes.dto.error.ErrorResponse;
+import ar.edu.utn.frc.backend.solicitudes.dto.error.ValidationError;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -47,6 +49,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
+    
+    // --- MANEJADOR 403 FORBIDDEN (Acceso Denegado por Spring Security) ---
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex, 
+            HttpServletRequest request) {
+        
+        HttpStatus status = HttpStatus.FORBIDDEN;
+        
+        // En este punto, sabemos que el usuario está autenticado pero no tiene permisos.
+        System.err.println("Error 403 (Forbidden) capturado: " + ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(status.value())
+            .error(status.getReasonPhrase())
+            .message("Acceso denegado. No tienes los permisos necesarios para realizar esta acción.")
+            .path(request.getRequestURI())
+            .build();
+        
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
 
     // 400 BAD REQUEST (Errores de validación de DTO con @Valid en @RequestBody)
     @Override
@@ -107,10 +132,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
     
     // 500 INTERNAL SERVER ERROR (Errores no controlados)
+    // Es CRUCIAL que este sea el ÚLTIMO manejador, ya que captura 'Exception.class'
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
         // IMPORTANTE: En producción, no exponer ex.getMessage() para errores 500.
         System.err.println("Error 500 no controlado: " + ex.getMessage()); 
+        ex.printStackTrace(); // Imprimir la traza completa es vital para el debugging
         
         String errorMessage = "Ocurrió un error interno inesperado del servidor. Por favor, contacte a soporte.";
         

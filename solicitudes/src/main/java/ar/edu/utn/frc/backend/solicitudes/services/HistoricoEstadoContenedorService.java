@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.backend.solicitudes.services;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,7 +28,7 @@ public class HistoricoEstadoContenedorService {
     public HistoricoEstadoContenedor crearNuevoHistorico(
         Contenedor contenedor, 
         Estado estado, 
-        LocalDate fechaDesde, 
+        LocalDateTime fechaDesde, 
         String descripcion
     ) {
         HistoricoEstadoContenedor nuevoHistorico = HistoricoEstadoContenedor.builder()
@@ -59,7 +59,7 @@ public class HistoricoEstadoContenedorService {
     }
 
     @Transactional
-    public void cerrarHistoricoAnterior(Integer contenedorId, LocalDate fechaHasta) {
+    public void cerrarHistoricoAnterior(Integer contenedorId, LocalDateTime fechaHasta) {
         historicoEstadoRepository.findByContenedorIdAndFechaHoraHastaIsNull(contenedorId)
                 .ifPresent(historicoAnterior -> {
                     historicoAnterior.setFechaHoraHasta(fechaHasta);

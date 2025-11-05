@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,7 +30,11 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeExchange(exchanges -> exchanges
+                // Rutas que no requieren autenticación
                 .pathMatchers("/", "/actuator/**", "/auth/token").permitAll()
+                // PERMITIR POST DE REGISTRO DE CLIENTES
+                .pathMatchers(HttpMethod.POST, "/api/clientes").permitAll()
+                // Cualquier otra solicitud requiere autenticación
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> 

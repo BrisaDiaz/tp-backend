@@ -17,7 +17,7 @@ public interface ContenedorRepository extends JpaRepository<Contenedor, Integer>
     List<Contenedor> findByEstadoNombre(@Param("nombreEstado") String nombreEstado);
 
     @Query(value = "SELECT c.* FROM contenedor c " +
-                   "JOIN solicitudes_transporte s ON c.id = s.id_contenedor " +
+                   "JOIN solicitud_transporte s ON c.id = s.id_contenedor " +
                    "WHERE s.id_cliente = :idCliente",
              nativeQuery = true)
     List<Contenedor> findBySolicitudClienteId(@Param("idCliente") Integer idCliente);

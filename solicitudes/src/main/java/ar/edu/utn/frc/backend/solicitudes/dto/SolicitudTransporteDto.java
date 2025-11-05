@@ -1,7 +1,7 @@
 package ar.edu.utn.frc.backend.solicitudes.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SolicitudTransporteDto {
     private Integer id;
-    private LocalDate fechaSolicitud;
+    private LocalDateTime fechaSolicitud;
     private BigDecimal costoEstimado;
-    private int tiempoEstimado;
+    private Long tiempoEstimado;
     private BigDecimal costoReal;
-    private int tiempoReal;
+    private Long tiempoReal;
     private String estado;
     private Integer clienteId;
     private ContenedorDto contenedor;

@@ -1,9 +1,17 @@
 package ar.edu.utn.frc.backend.recursos.dto;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.*;
-import lombok.*;
 import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 public class CamionDto {

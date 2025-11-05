@@ -9,13 +9,14 @@ import org.springframework.web.client.RestClient;
 import ar.edu.utn.frc.backend.logistica.dto.helpers.CostoYTiempoDto;
 import ar.edu.utn.frc.backend.logistica.dto.helpers.InfoDepositoDto;
 import ar.edu.utn.frc.backend.logistica.dto.SolicitudTransporteDto;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class SolicitudesClient {
-    // Inyecta el RestClient configurado con el base-url de Solicitudes
-    private final @Qualifier("solicitudesClient") RestClient restClient;
+    private final RestClient restClient;
+
+    public SolicitudesClient(@Qualifier("solicitudesRestClient") RestClient restClient) {
+        this.restClient = restClient;
+    };
 
     // Obtener la solicitud por ID
     public SolicitudTransporteDto getSolicitudById(Integer idSolicitud) {
@@ -40,7 +41,7 @@ public class SolicitudesClient {
 
     // Actualizar la solicitud a programada
     public SolicitudTransporteDto actualizarSolicitudAProgramada(Integer idSolicitud, BigDecimal costoEstimado,
-            int tiempoEstimado) {
+            Long tiempoEstimado) {
         CostoYTiempoDto costoYTiempoDto = CostoYTiempoDto.builder()
                 .costo(costoEstimado)
                 .tiempo(tiempoEstimado)
@@ -55,21 +56,17 @@ public class SolicitudesClient {
     }
 
     // Actualizar la solicitud a en transito
-    public SolicitudTransporteDto actualizarSolicitudAEnTransito(Integer idSolicitud, String nombreDeposito) {
-        InfoDepositoDto infoDepositoDto = InfoDepositoDto.builder()
-                .nombre(nombreDeposito)
-                .build();
+    public SolicitudTransporteDto actualizarSolicitudAEnTransito(Integer idSolicitud) {
         String uri = String.format("/solicitudes/%d/en-transito", idSolicitud);
 
         return restClient.put()
                 .uri(uri)
-                .body(infoDepositoDto)
                 .retrieve()
                 .body(SolicitudTransporteDto.class);
     }
 
     // Actualizar la solicitud a programada
-    public SolicitudTransporteDto actualizarSolicitudAEntregada(Integer idSolicitud, BigDecimal costoReal, int tiempoReal) {
+    public SolicitudTransporteDto actualizarSolicitudAEntregada(Integer idSolicitud, BigDecimal costoReal, Long tiempoReal) {
         CostoYTiempoDto costoYTiempoDto = CostoYTiempoDto.builder()
                 .costo(costoReal)
                 .tiempo(tiempoReal)

@@ -41,10 +41,10 @@ public class Tramo {
     private LocalDateTime fechaHoraFin; // Fecha y hora real de fin del tramo
 
     @Column(nullable = false)
-    private Integer tiempoEstimado; // Duración estimada en segundos
+    private Long tiempoEstimado; // Duración estimada en segundos
 
     @Column(nullable = true)
-    private Integer tiempoReal; // Duración real en segundos
+    private Long tiempoReal; // Duración real en segundos
 
     @Column(nullable = false)
     private Float distanciaKm;
@@ -66,7 +66,7 @@ public class Tramo {
     private TipoTramo tipoTramo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "camion_id", nullable = true)
+    @JoinColumn(name = "id_camion", nullable = true)
     private Camion camion;
 
     @ManyToOne(fetch = FetchType.LAZY)

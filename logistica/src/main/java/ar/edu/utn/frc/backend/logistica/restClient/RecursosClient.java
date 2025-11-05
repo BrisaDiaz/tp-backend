@@ -9,14 +9,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import ar.edu.utn.frc.backend.logistica.dto.CamionDto;
 import ar.edu.utn.frc.backend.logistica.dto.DepositoDto;
-import lombok.RequiredArgsConstructor;
+import ar.edu.utn.frc.backend.logistica.dto.CargoGestionDto;
+import ar.edu.utn.frc.backend.logistica.dto.PrecioCombustibleDto;
 
 @Component
-@RequiredArgsConstructor
 public class RecursosClient {
 
-    // Inyecta el RestClient configurado con el base-url de Recursos
-    private final @Qualifier("recursosClient") RestClient restClient;
+    private final RestClient restClient;
+
+    // Cambia el constructor para usar @Qualifier
+    public RecursosClient(@Qualifier("recursosRestClient") RestClient restClient) {
+        this.restClient = restClient;
+    }
 
     // Obtener los camiones disponibles cuyo volumen y peso mínimos se especifican
     public List<CamionDto> getCamionesDisponibles(BigDecimal volumenMinimo, BigDecimal pesoMinimo) {
@@ -50,23 +54,23 @@ public class RecursosClient {
     }
 
     // Obtener el costo del combustible por litro
-    public BigDecimal getCostoCombustiblePorLitro() {
+    public PrecioCombustibleDto getCostoCombustiblePorLitro() {
         String uri = "/tarifas/combustible";
 
         return restClient.get()
                 .uri(uri)
                 .retrieve()
-                .body(BigDecimal.class);
+                .body(PrecioCombustibleDto.class);
     }
 
     // Obtener el cargo por gestión
-    public BigDecimal getCargoPorGestion() {
+    public CargoGestionDto getCargoPorGestion() {
         String uri = "/tarifas/gestion";
 
         return restClient.get()
                 .uri(uri)
                 .retrieve()
-                .body(BigDecimal.class);
+                .body(CargoGestionDto.class);
     }
 
     // Obtener todos los depósitos

@@ -46,9 +46,9 @@ public class CamionController {
     }
 
     // Obtener camión por ID 
-    @GetMapping("/{camionId}")
-    public ResponseEntity<CamionDto> obtenerCamionPorId(@PathVariable Integer camionId) {
-        return camionService.buscarPorId(camionId)
+    @GetMapping("/{id}")
+    public ResponseEntity<CamionDto> obtenerCamionPorId(@PathVariable Integer id) {
+        return camionService.buscarPorId(id)
                 .map(camionDto -> ResponseEntity.ok().body(camionDto))
                 .orElse(ResponseEntity.notFound().build());
     }

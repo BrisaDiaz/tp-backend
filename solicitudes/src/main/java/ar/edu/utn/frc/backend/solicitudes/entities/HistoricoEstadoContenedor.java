@@ -1,5 +1,5 @@
 package ar.edu.utn.frc.backend.solicitudes.entities;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "estado")
+@Table(name = "historico_estado_contenedor")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -34,10 +33,10 @@ public class HistoricoEstadoContenedor {
     private Integer id;
 
     @Column(name = "fecha_hora_desde", nullable = false)
-    private LocalDate fechaHoraDesde;
+    private LocalDateTime fechaHoraDesde;
 
     @Column(name = "fecha_hora_hasta")
-    private LocalDate fechaHoraHasta;
+    private LocalDateTime fechaHoraHasta;
     
     @Column(name = "descripcion", nullable = false)
     private String descripcion;
