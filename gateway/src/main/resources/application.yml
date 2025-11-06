@@ -7,36 +7,15 @@ spring:
 
   cloud:
     gateway:
-      server:
-        webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowed-origins: 'http://localhost:5173,http://localhost:3000'
-                allowed-methods: '*'
-                allowed-headers: '*'
-                allow-credentials: true
-      routes:
-        - id: recursos
-          uri: http://recursos:8081
-          predicates:
-            - Path=/api/recursos/**
-          filters:
-            - StripPrefix=1
-
-        - id: solicitudes
-          uri: http://solicitudes:8082
-          predicates:
-            - Path=/api/solicitudes/**
-          filters:
-            - StripPrefix=1
-
-        - id: logistica
-          uri: http://logistica:8083
-          predicates:
-            - Path=/api/logistica/**
-          filters:
-            - StripPrefix=1
+      default-filters:
+        - RemoveRequestHeader=Cookie
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: 'http://localhost:5173, http://localhost:3000'
+            allowed-methods: '*'
+            allowed-headers: '*'
+            allow-credentials: true
 
   security:
     oauth2:
@@ -44,8 +23,35 @@ spring:
         jwt:
           issuer-uri: http://keycloak:8080/realms/tpi-backend
 
+# Configuración de servicios
+app:
+  services:
+    logistica: http://logistica:8083
+    solicitudes: http://solicitudes:8082
+    recursos: http://recursos:8081
+
+# Configuración de SpringDoc
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls-primary-name: Services
+    display-request-duration: true
+    filter: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    ar.edu.utn.frc.backend.gateway: DEBUG

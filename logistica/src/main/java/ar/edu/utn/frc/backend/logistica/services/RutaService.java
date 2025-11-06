@@ -22,6 +22,7 @@ import ar.edu.utn.frc.backend.logistica.entities.SolicitudTransporte;
 import ar.edu.utn.frc.backend.logistica.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.entities.Camion;
 import ar.edu.utn.frc.backend.logistica.entities.Contenedor;
+import ar.edu.utn.frc.backend.logistica.exceptions.DataConflictException;
 import ar.edu.utn.frc.backend.logistica.exceptions.RecursoNoDisponibleException;
 import ar.edu.utn.frc.backend.logistica.exceptions.ResourceNotFoundException;
 import ar.edu.utn.frc.backend.logistica.restClient.RecursosClient;
@@ -392,6 +393,12 @@ public class RutaService {
     // Método para asignar una ruta a una solicitud (aquí SÍ se persiste)
     public Optional<RutaDto> asignarRutaASolicitud(Integer solicitudId, RutaTentativaDto rutaTentativa) {
         log.info("Asignando ruta a solicitud ID: {}", solicitudId);
+        
+        // ✅ VALIDACIÓN: Verificar que la solicitud no tenga ya una ruta asignada
+        Optional<Ruta> rutaExistente = rutaRepository.findBySolicitudId(solicitudId);
+        if (rutaExistente.isPresent()) {
+            throw new DataConflictException("La solicitud ID " + solicitudId + " ya tiene una ruta asignada");
+        }
         
         try {
             // Verificar que la solicitud existe desde el repository local

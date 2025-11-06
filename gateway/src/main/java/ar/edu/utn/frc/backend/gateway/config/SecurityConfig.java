@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.gateway;
+package ar.edu.utn.frc.backend.gateway.config;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,8 +30,23 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeExchange(exchanges -> exchanges
-                // Rutas que no requieren autenticación
-                .pathMatchers("/", "/actuator/**", "/auth/token").permitAll()
+                // Rutas que no requieren autenticación (Swagger, Actuator, etc.)
+                .pathMatchers(
+                    "/", 
+                    "/actuator/**", 
+                    "/auth/token", 
+                    // Swagger UI routes
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/webjars/**",
+                    "/v3/api-docs/**",
+                    "/v3/api-docs",
+                    "/swagger-resources/**",
+                    "/swagger-resources",
+                    "/configuration/ui",
+                    "/configuration/security",
+                    "/api-docs/**"
+                ).permitAll()
                 // PERMITIR POST DE REGISTRO DE CLIENTES
                 .pathMatchers(HttpMethod.POST, "/api/clientes").permitAll()
                 // Cualquier otra solicitud requiere autenticación
@@ -48,6 +63,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOrigin("http://localhost:5173");
         config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("http://localhost:8080"); // Para Swagger UI directo
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

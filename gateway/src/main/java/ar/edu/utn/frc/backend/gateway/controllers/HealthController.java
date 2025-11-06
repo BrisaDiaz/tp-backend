@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.gateway.controller;
+package ar.edu.utn.frc.backend.gateway.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

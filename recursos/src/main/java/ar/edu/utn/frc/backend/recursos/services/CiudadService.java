@@ -10,13 +10,18 @@ import org.springframework.stereotype.Service;
 
 import ar.edu.utn.frc.backend.recursos.dto.CiudadDto;
 import ar.edu.utn.frc.backend.recursos.entities.Ciudad;
+import ar.edu.utn.frc.backend.recursos.exceptions.DataConflictException;
 import ar.edu.utn.frc.backend.recursos.repositories.CiudadRepository;
+import ar.edu.utn.frc.backend.recursos.repositories.DepositoRepository;
+
 import jakarta.transaction.Transactional;
 
 @Service    
 public class CiudadService {
     @Autowired
     private CiudadRepository ciudadRepository;
+    @Autowired
+    private DepositoRepository depositoRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -58,6 +63,19 @@ public class CiudadService {
         } else {
             return Optional.empty();
         }
+    }
+
+    @Transactional
+    public boolean eliminarCiudad(Integer id) {
+        if (ciudadRepository.existsById(id)) {
+            // VERIFICAR si hay depósitos que dependen de esta ciudad
+            if (depositoRepository.existsByCiudadId(id)) {
+                throw new DataConflictException("No se puede eliminar la ciudad: tiene depósitos asociados");
+            }
+            ciudadRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
 }

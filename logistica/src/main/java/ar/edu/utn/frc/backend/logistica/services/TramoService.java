@@ -14,20 +14,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ar.edu.utn.frc.backend.logistica.dto.TramoDto;
 import ar.edu.utn.frc.backend.logistica.dto.RutaTentativaDto;
-import ar.edu.utn.frc.backend.logistica.dto.TramoTentativoDto;
+import ar.edu.utn.frc.backend.logistica.dto.TramoDto;
 import ar.edu.utn.frc.backend.logistica.entities.Camion;
+import ar.edu.utn.frc.backend.logistica.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.entities.Estado;
+import ar.edu.utn.frc.backend.logistica.entities.Ruta;
 import ar.edu.utn.frc.backend.logistica.entities.TipoTramo;
 import ar.edu.utn.frc.backend.logistica.entities.Tramo;
-import ar.edu.utn.frc.backend.logistica.entities.Ruta;
-import ar.edu.utn.frc.backend.logistica.entities.Deposito;
+import ar.edu.utn.frc.backend.logistica.exceptions.DataConflictException;
 import ar.edu.utn.frc.backend.logistica.exceptions.ResourceNotFoundException;
 import ar.edu.utn.frc.backend.logistica.repositories.CamionRepository;
+import ar.edu.utn.frc.backend.logistica.repositories.DepositoRepository;
 import ar.edu.utn.frc.backend.logistica.repositories.EstadoRepository;
 import ar.edu.utn.frc.backend.logistica.repositories.TramoRepository;
-import ar.edu.utn.frc.backend.logistica.repositories.DepositoRepository;
 import ar.edu.utn.frc.backend.logistica.restClient.RecursosClient;
 import ar.edu.utn.frc.backend.logistica.restClient.SolicitudesClient;
 import lombok.extern.slf4j.Slf4j;
@@ -163,6 +163,7 @@ public class TramoService {
     }
 
     // Asignar camión a un tramo
+    @Transactional
     public Optional<TramoDto> asignarCamion(Integer idTramo, Integer idCamion) {
         Optional<Tramo> optTramo = tramoRepository.findById(idTramo);
         Optional<Camion> optCamion = camionRepository.findById(idCamion);
@@ -181,6 +182,16 @@ public class TramoService {
         Tramo tramo = optTramo.get();
         Camion camion = optCamion.get();
 
+        // ✅ VALIDACIÓN: Verificar que el tramo no tenga ya un camión asignado
+        if (tramo.getCamion() != null) {
+            throw new DataConflictException("El tramo ID " + idTramo + " ya tiene un camión asignado");
+        }
+
+        // ✅ VALIDACIÓN: Verificar que el camión no esté ocupado
+        if (!camion.getDisponibilidad()) {
+            throw new DataConflictException("El camión ID " + idCamion + " ya está ocupado");
+        }
+
         tramo.setCamion(camion);
         tramo.setEstado(optEstado.get());
         tramoRepository.save(tramo);
@@ -197,6 +208,7 @@ public class TramoService {
     }
 
     // Iniciar tramo
+    @Transactional
     public Optional<TramoDto> iniciarTramo(Integer idTramo) {
         Optional<Tramo> optTramo = tramoRepository.findById(idTramo);
         Optional<Estado> optEstado = estadoRepository.findByNombre(ESTADO_INICIADO);
@@ -209,6 +221,17 @@ public class TramoService {
         }
 
         Tramo tramo = optTramo.get();
+
+        // ✅ VALIDACIÓN: Verificar que el tramo esté en estado "Asignado"
+        if (!tramo.getEstado().getNombre().equals(ESTADO_ASIGNADO)) {
+            throw new DataConflictException("El tramo ID " + idTramo + " no está en estado 'Asignado'. Estado actual: " + tramo.getEstado().getNombre());
+        }
+
+        // ✅ VALIDACIÓN: Verificar que el tramo tenga camión asignado
+        if (tramo.getCamion() == null) {
+            throw new DataConflictException("El tramo ID " + idTramo + " no tiene un camión asignado para iniciar");
+        }
+
         tramo.setEstado(optEstado.get());
         tramo.setFechaHoraInicio(LocalDateTime.now());
         tramoRepository.save(tramo);
@@ -235,6 +258,7 @@ public class TramoService {
     }
 
     // Finalizar tramo
+    @Transactional
     public Optional<TramoDto> finalizarTramo(Integer idTramo) {
         Optional<Tramo> optTramo = tramoRepository.findById(idTramo);
         Optional<Estado> optEstado = estadoRepository.findByNombre(ESTADO_FINALIZADO);
@@ -247,6 +271,17 @@ public class TramoService {
         }
 
         Tramo tramo = optTramo.get();
+
+        // ✅ VALIDACIÓN: Verificar que el tramo esté en estado "Iniciado"
+        if (!tramo.getEstado().getNombre().equals(ESTADO_INICIADO)) {
+            throw new DataConflictException("El tramo ID " + idTramo + " no está en estado 'Iniciado'. Estado actual: " + tramo.getEstado().getNombre());
+        }
+
+        // ✅ VALIDACIÓN: Verificar que tenga fecha de inicio
+        if (tramo.getFechaHoraInicio() == null) {
+            throw new DataConflictException("El tramo ID " + idTramo + " no tiene fecha/hora de inicio registrada");
+        }
+
         tramo.setEstado(optEstado.get());
         tramo.setFechaHoraFin(LocalDateTime.now());
         tramoRepository.save(tramo);
@@ -348,31 +383,59 @@ public class TramoService {
      */
     public boolean esPropietarioDelTramo(Integer tramoId, String authId) {
         log.info("Verificando propiedad del tramo {} para authId: {}", tramoId, authId);
-        
+
         Optional<Tramo> tramoOpt = tramoRepository.findById(tramoId);
         if (tramoOpt.isEmpty()) {
             log.warn("Tramo no encontrado: {}", tramoId);
             return false;
         }
-        
+
         Tramo tramo = tramoOpt.get();
-        
+
         // Verificar que el tramo tenga un camión asignado
         if (tramo.getCamion() == null) {
             log.warn("El tramo {} no tiene camión asignado", tramoId);
             return false;
         }
-        
+
         // Verificar que el camión tenga auth_id
         if (tramo.getCamion().getAuthId() == null) {
             log.warn("El camión {} del tramo {} no tiene auth_id", tramo.getCamion().getId(), tramoId);
             return false;
         }
-        
+
         boolean esPropietario = tramo.getCamion().getAuthId().equals(authId);
-        
-        log.info("Verificación de propiedad - Tramo ID: {}, Camión asignado: {}, AuthId del camión: {}, AuthId del usuario: {}, Resultado: {}", 
+
+        log.info(
+                "Verificación de propiedad - Tramo ID: {}, Camión asignado: {}, AuthId del camión: {}, AuthId del usuario: {}, Resultado: {}",
                 tramoId, tramo.getCamion().getId(), tramo.getCamion().getAuthId(), authId, esPropietario);
+
+        return esPropietario;
+    }
+    
+    /**
+     * Verifica si el usuario autenticado es propietario del camión
+     */
+    public boolean esPropietarioDelCamion(Integer camionId, String authId) {
+        log.info("Verificando propiedad del camión {} para authId: {}", camionId, authId);
+        
+        Optional<Camion> camionOpt = camionRepository.findById(camionId);
+        if (camionOpt.isEmpty()) {
+            log.warn("Camión no encontrado: {}", camionId);
+            return false;
+        }
+        
+        Camion camion = camionOpt.get();
+        
+        if (camion.getAuthId() == null) {
+            log.warn("El camión {} no tiene auth_id", camionId);
+            return false;
+        }
+        
+        boolean esPropietario = camion.getAuthId().equals(authId);
+        
+        log.info("Verificación de propiedad del camión - Solicitado: {}, AuthId del camión: {}, AuthId del usuario: {}, Resultado: {}", 
+                camionId, camion.getAuthId(), authId, esPropietario);
         
         return esPropietario;
     }

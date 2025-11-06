@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,60 +18,163 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.utn.frc.backend.recursos.dto.CiudadDto;
 import ar.edu.utn.frc.backend.recursos.services.CiudadService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/ciudades")
+@Tag(name = "2. Gestión de Ciudades", description = "APIs para gestionar ciudades - Altas, bajas, modificaciones y consultas")
+@SecurityRequirement(name = "bearerAuth")
 public class CiudadController {
 
     @Autowired
     private CiudadService ciudadService;
 
-    // GET /api/ciudades: Listar todas las ciudades
+    @Operation(
+        summary = "Obtener todas las ciudades",
+        description = """
+            Retorna la lista completa de ciudades del sistema.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Lista de ciudades obtenida exitosamente",
+            content = @Content(schema = @Schema(implementation = CiudadDto[].class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<CiudadDto>> obtenerTodasLasCiudades() {
-        // Asumiendo que CiudadService tiene un método para buscar todas (se agrega abajo)
         List<CiudadDto> ciudades = ciudadService.buscarTodos();
         return ResponseEntity.ok(ciudades);
     }
 
-    // GET /api/ciudades/buscar?codigoPostal=X5000: Obtener ciudad por código postal
+    @Operation(
+        summary = "Buscar ciudad por código postal",
+        description = """
+            Busca una ciudad por su código postal.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Ciudad encontrada",
+            content = @Content(schema = @Schema(implementation = CiudadDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Ciudad no encontrada")
+    })
     @GetMapping("/buscar")
-    public ResponseEntity<CiudadDto> obtenerCiudadPorCodigoPostal(@RequestParam String codigoPostal) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CiudadDto> obtenerCiudadPorCodigoPostal(
+            @Parameter(description = "Código postal de la ciudad", example = "X5000", required = true) 
+            @RequestParam String codigoPostal) {
         Optional<CiudadDto> ciudadOpt = ciudadService.buscarPorCodigoPostal(codigoPostal);
-
-        return ciudadOpt
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ciudadOpt.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    // GET /api/ciudades/{id}: Obtener ciudad por ID
+    @Operation(
+        summary = "Obtener ciudad por ID",
+        description = """
+            Retorna los detalles de una ciudad específica por su ID.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Ciudad encontrada",
+            content = @Content(schema = @Schema(implementation = CiudadDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Ciudad no encontrada")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<CiudadDto> obtenerCiudadPorId(@PathVariable Integer id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CiudadDto> obtenerCiudadPorId(
+            @Parameter(description = "ID de la ciudad", example = "1", required = true) 
+            @PathVariable Integer id) {
         Optional<CiudadDto> ciudadOpt = ciudadService.buscarPorId(id);
-
-        return ciudadOpt
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ciudadOpt.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/ciudades: Dar de alta una nueva ciudad
+    @Operation(
+        summary = "Crear nueva ciudad",
+        description = """
+            Da de alta una nueva ciudad en el sistema.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "201", 
+            description = "Ciudad creada exitosamente",
+            content = @Content(schema = @Schema(implementation = CiudadDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "409", description = "Conflicto - La ciudad o código postal ya existe")
+    })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CiudadDto> crearCiudad(@Valid @RequestBody CiudadDto ciudadDto) {
         CiudadDto nuevaCiudad = ciudadService.guardarCiudad(ciudadDto);
-        // Devuelve 201 Created
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCiudad);
     }
 
-    // PUT /api/ciudades/{id}: Actualizar una ciudad existente
+    @Operation(
+        summary = "Actualizar ciudad",
+        description = """
+            Actualiza los datos de una ciudad existente.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Ciudad actualizada exitosamente",
+            content = @Content(schema = @Schema(implementation = CiudadDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Ciudad no encontrada"),
+        @ApiResponse(responseCode = "409", description = "Conflicto - El código postal ya existe")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<CiudadDto> actualizarCiudad(@PathVariable Integer id, @Valid @RequestBody CiudadDto ciudadDto) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CiudadDto> actualizarCiudad(
+            @Parameter(description = "ID de la ciudad a actualizar", example = "1", required = true) 
+            @PathVariable Integer id, 
+            
+            @Valid @RequestBody CiudadDto ciudadDto) {
         Optional<CiudadDto> ciudadActualizada = ciudadService.actualizarCiudad(id, ciudadDto);
-
-        // Si se actualizó (existía), devuelve 200 OK. Si no, devuelve 404 Not Found.
-        return ciudadActualizada
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ciudadActualizada.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
-
 }

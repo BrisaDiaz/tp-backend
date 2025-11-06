@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import static org.springframework.http.ResponseEntity.status;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,86 +20,277 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.utn.frc.backend.recursos.dto.CamionDto;
 import ar.edu.utn.frc.backend.recursos.services.CamionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/camiones")
+@Tag(name = "1. Gestión de Camiones", description = "APIs para gestionar la flota de camiones - Altas, bajas, modificaciones y control de estado")
+@SecurityRequirement(name = "bearerAuth")
 public class CamionController {
 
     @Autowired
     private CamionService camionService;
 
-    // Obtener todos los camiones disponibles con capacidad mínima de volumen y peso
+    @Operation(
+        summary = "Obtener camiones disponibles",
+        description = """
+            Retorna todos los camiones disponibles que cumplen con la capacidad mínima requerida.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = {}
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Lista de camiones disponibles obtenida exitosamente",
+            content = @Content(schema = @Schema(implementation = CamionDto[].class))
+        ),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/libres")
     public ResponseEntity<List<CamionDto>> obtenerCamionesDisponibles(
+        @Parameter(description = "Volumen mínimo requerido en m³", example = "50.0") 
         @RequestParam(name = "volumen", required = false, defaultValue = "0") BigDecimal volumen,
+        
+        @Parameter(description = "Peso mínimo requerido en kg", example = "10000.0") 
         @RequestParam(name = "peso", required = false, defaultValue = "0") BigDecimal peso
     ) {
         List<CamionDto> camiones = camionService.buscarCamionesDisponibles(volumen, peso);
         return ResponseEntity.ok().body(camiones);
     }
 
-    // Obtener todos los camiones
+    @Operation(
+        summary = "Obtener todos los camiones",
+        description = """
+            Retorna la lista completa de camiones del sistema.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Lista de camiones obtenida exitosamente",
+            content = @Content(schema = @Schema(implementation = CamionDto[].class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<CamionDto>> obtenerTodosLosCamiones() {
         List<CamionDto> camiones = camionService.buscarTodosLosCamiones();
         return ResponseEntity.ok().body(camiones);
     }
 
-    // Obtener camión por ID 
+    @Operation(
+        summary = "Obtener camión por ID",
+        description = """
+            Retorna los detalles de un camión específico por su ID.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Camión encontrado",
+            content = @Content(schema = @Schema(implementation = CamionDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Camión no encontrado")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<CamionDto> obtenerCamionPorId(@PathVariable Integer id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CamionDto> obtenerCamionPorId(
+            @Parameter(description = "ID del camión", example = "1", required = true) 
+            @PathVariable Integer id) {
         return camionService.buscarPorId(id)
                 .map(camionDto -> ResponseEntity.ok().body(camionDto))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Obtener camión por dominio
+    @Operation(
+        summary = "Obtener camión por dominio",
+        description = """
+            Busca un camión por su número de dominio (patente).
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Camión encontrado",
+            content = @Content(schema = @Schema(implementation = CamionDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Camión no encontrado")
+    })
     @GetMapping("/dominio")
-    public ResponseEntity<CamionDto> obtenerCamionPorDominio(@RequestParam String dominio) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CamionDto> obtenerCamionPorDominio(
+            @Parameter(description = "Dominio del camión (patente)", example = "ABC123", required = true) 
+            @RequestParam String dominio) {
         return camionService.buscarPorDominio(dominio)
                 .map(camionDto -> ResponseEntity.ok().body(camionDto))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Alta de nuevo camión
+    @Operation(
+        summary = "Crear nuevo camión",
+        description = """
+            Da de alta un nuevo camión en el sistema.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "201", 
+            description = "Camión creado exitosamente",
+            content = @Content(schema = @Schema(implementation = CamionDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "409", description = "Conflicto - El dominio ya existe")
+    })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CamionDto> agregarCamion(
-        @Valid @RequestBody CamionDto camionDto) {
+            @Valid @RequestBody CamionDto camionDto) {
         CamionDto camionGuardado = camionService.guardarCamion(camionDto);
         return status(HttpStatus.CREATED).body(camionGuardado);
     }
 
-    // Actualizar camión existente
+    @Operation(
+        summary = "Actualizar camión",
+        description = """
+            Actualiza los datos de un camión existente.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Camión actualizado exitosamente",
+            content = @Content(schema = @Schema(implementation = CamionDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Camión no encontrado"),
+        @ApiResponse(responseCode = "409", description = "Conflicto - El dominio ya existe")
+    })
     @PutMapping("/{camionId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CamionDto> actualizarCamion(
-        @PathVariable Integer camionId, 
-        @Valid @RequestBody CamionDto camionDto) {
+            @Parameter(description = "ID del camión a actualizar", example = "1", required = true) 
+            @PathVariable Integer camionId, 
+            
+            @Valid @RequestBody CamionDto camionDto) {
         return camionService.actualizarCamion(camionId, camionDto)
                 .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Eliminar camión
+    @Operation(
+        summary = "Eliminar camión",
+        description = """
+            Elimina un camión del sistema.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Camión eliminado exitosamente"),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Camión no encontrado"),
+        @ApiResponse(responseCode = "409", description = "Conflicto - El camión no puede ser eliminado (tiene tramos asignados)")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarCamion(@PathVariable Integer id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> eliminarCamion(
+            @Parameter(description = "ID del camión a eliminar", example = "1", required = true) 
+            @PathVariable Integer id) {
         if (camionService.eliminarCamion(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
 
-    // Marcar camión como ocupado
+    @Operation(
+        summary = "Marcar camión como ocupado",
+        description = """
+            Actualiza el estado del camión a 'ocupado'.
+            Utilizado por el servicio de Logística cuando asigna un camión a un tramo.
+            
+            **Acceso:** Público (interno)
+            """,
+        security = {}
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Camión marcado como ocupado exitosamente",
+            content = @Content(schema = @Schema(implementation = CamionDto.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "Camión no encontrado"),
+        @ApiResponse(responseCode = "409", description = "El camión ya está ocupado")
+    })
     @PutMapping("/{id}/ocupado")
-    public ResponseEntity<CamionDto> setOcupado(@PathVariable Integer id) {
+    public ResponseEntity<CamionDto> setOcupado(
+            @Parameter(description = "ID del camión", example = "1", required = true) 
+            @PathVariable Integer id) {
         return camionService.setCamionOcupado(id)
                 .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Marcar camión como libre
+    @Operation(
+        summary = "Marcar camión como libre",
+        description = """
+            Actualiza el estado del camión a 'libre'.
+            Utilizado por el servicio de Logística cuando finaliza un tramo.
+            
+            **Acceso:** Público (interno)
+            """,
+        security = {}
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Camión marcado como libre exitosamente",
+            content = @Content(schema = @Schema(implementation = CamionDto.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "Camión no encontrado"),
+        @ApiResponse(responseCode = "409", description = "El camión ya está libre")
+    })
     @PutMapping("/{id}/libre")
-    public ResponseEntity<CamionDto> setLibre(@PathVariable Integer id) {
+    public ResponseEntity<CamionDto> setLibre(
+            @Parameter(description = "ID del camión", example = "1", required = true) 
+            @PathVariable Integer id) {
         return camionService.setCamionLibre(id)
                 .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
                 .orElse(ResponseEntity.notFound().build());

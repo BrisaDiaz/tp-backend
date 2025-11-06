@@ -27,38 +27,29 @@ public class ResourceServerConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                // Rutas públicas (actuator)
+                // Rutas públicas (actuator, health, info)
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                //LOGISTICA
+                .requestMatchers("/actuator/**").permitAll()
+                // Rutas públicas de SpringDoc
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // LOGISTICA (Permisos internos/públicos necesarios)
                 .requestMatchers(HttpMethod.GET, "/api/tarifas/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/camiones/{id}/libre").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/camiones/{id}/ocupado").permitAll()
                 
-                // === PERMISOS LOGISTICA ===
-                
-                // Camiones: Permite GET (consulta) y PUT (actualización de estado) a LOGISTICA
+                // === PERMISOS LOGISTICA (Se asume que Logística llama con token de ADMIN) ===
                 .requestMatchers(HttpMethod.GET, "/api/camiones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/camiones/{id}").hasRole("ADMIN")
-                
-                // Depósitos: Permite GET (consulta)
                 .requestMatchers(HttpMethod.GET, "/api/depositos/**").hasRole("ADMIN")
 
                 // === ACCIONES EXCLUSIVAS DE ADMIN ===
-                
-                // Camiones: POST (creación) y DELETE (eliminación)
                 .requestMatchers(HttpMethod.POST, "/api/camiones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/camiones/**").hasRole("ADMIN")
-                
-                // Depósitos: POST (creación), PUT (modificación de datos) y DELETE (eliminación)
                 .requestMatchers(HttpMethod.POST, "/api/depositos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/depositos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/depositos/**").hasRole("ADMIN")
-                
-                // Ciudades: Todas las acciones
                 .requestMatchers("/api/ciudades/**").hasRole("ADMIN")
-                
-                // Tarifas: POST (creación/modificación de tarifas)
                 .requestMatchers(HttpMethod.POST, "/api/tarifas/**").hasRole("ADMIN")
 
                 // Cualquier otra ruta requiere autenticación

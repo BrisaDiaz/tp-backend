@@ -42,12 +42,11 @@ spring:
 # 5. Configuración de Swagger (springdoc)
 # ----------------------------------------------------
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-  info:
-    title: Servicio Recursos API
-    description: API para la gestión de camiones y contenedores.
-    version: 1.0.0
+    enabled: true # Puede estar habilitado para desarrollo
 
 # ----------------------------------------------------
 # 6. Endpoints de Actuator (Opcional)

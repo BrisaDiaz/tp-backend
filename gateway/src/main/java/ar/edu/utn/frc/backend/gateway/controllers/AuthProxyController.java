@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.gateway.controller;
+package ar.edu.utn.frc.backend.gateway.controllers;
 
 import java.util.Map;
 

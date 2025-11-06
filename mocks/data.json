@@ -1,0 +1,405 @@
+{
+  "clientes": {
+    "crearCliente": {
+      "nombre": "María López",
+      "apellido": "García",
+      "email": "maria.lopez@example.com",
+      "telefono": "+5493516667777",
+      "dni": "33445566"
+    },
+    "actualizarCliente": {
+      "nombre": "Carla",
+      "apellido": "Gómez Rodríguez",
+      "email": "carla.gomez.updated@example.com",
+      "telefono": "+5493512223344",
+      "dni": "28123456"
+    }
+  },
+  "solicitudes": {
+    "crearSolicitud": {
+      "idCliente": 1,
+      "idDepositoOrigen": 1,
+      "idDepositoDestino": 7,
+      "volumenContenedor": 30.5,
+      "pesoContenedor": 12000.0
+    },
+    "crearSolicitud2": {
+      "idCliente": 2,
+      "idDepositoOrigen": 3,
+      "idDepositoDestino": 15,
+      "volumenContenedor": 22.75,
+      "pesoContenedor": 8500.0
+    }
+  },
+  "rutas": {
+    "asignarRuta": {
+      "cantidadTramos": 2,
+      "cantidadDepositos": 3,
+      "tramos": [
+        {
+          "nroOrden": 1,
+          "origen": {
+            "id": 1,
+            "nombre": "Depósito Central Cba.",
+            "direccion": "Av. Circunvalación Oeste 5000",
+            "precioPorDia": 1850.0,
+            "latitud": -31.43,
+            "longitud": -64.2,
+            "ciudad": "Córdoba"
+          },
+          "destino": {
+            "id": 4,
+            "nombre": "Almacén VM",
+            "direccion": "Av. Libertador 2500",
+            "precioPorDia": 1150.0,
+            "latitud": -32.4,
+            "longitud": -63.25,
+            "ciudad": "Villa María"
+          },
+          "costoEstimado": 18500.5,
+          "tiempoEstimadoSegundos": 7200,
+          "distanciaKilometros": 140.5
+        },
+        {
+          "nroOrden": 2,
+          "origen": {
+            "id": 4,
+            "nombre": "Almacén VM",
+            "direccion": "Av. Libertador 2500",
+            "precioPorDia": 1150.0,
+            "latitud": -32.4,
+            "longitud": -63.25,
+            "ciudad": "Villa María"
+          },
+          "destino": {
+            "id": 7,
+            "nombre": "Puerto Rosario Logística",
+            "direccion": "Acceso Sur y Av. San Martín",
+            "precioPorDia": 2100.0,
+            "latitud": -33.0,
+            "longitud": -60.7,
+            "ciudad": "Rosario"
+          },
+          "costoEstimado": 22500.75,
+          "tiempoEstimadoSegundos": 10800,
+          "distanciaKilometros": 210.3
+        }
+      ]
+    },
+    "rutaDirecta": {
+      "cantidadTramos": 1,
+      "cantidadDepositos": 2,
+      "tramos": [
+        {
+          "nroOrden": 1,
+          "origen": {
+            "id": 3,
+            "nombre": "Logística Río Cuarto",
+            "direccion": "Ruta Nacional 36, Km 600",
+            "precioPorDia": 1200.0,
+            "latitud": -33.15,
+            "longitud": -64.38,
+            "ciudad": "Río Cuarto"
+          },
+          "destino": {
+            "id": 15,
+            "nombre": "Plataforma La Rioja",
+            "direccion": "Av. Ortiz de Ocampo 100",
+            "precioPorDia": 1000.0,
+            "latitud": -29.4,
+            "longitud": -66.86,
+            "ciudad": "La Rioja"
+          },
+          "costoEstimado": 32500.25,
+          "tiempoEstimadoSegundos": 18000,
+          "distanciaKilometros": 380.7
+        }
+      ]
+    }
+  },
+  "tramos": {
+    "asignarCamion": {
+      "camionId": 1
+    }
+  },
+  "camiones": {
+    "crearCamion": {
+      "dominio": "IIJ-567",
+      "capacidadVolumen": 65.0,
+      "capacidadPeso": 28000.0,
+      "costoPorKm": 14.25,
+      "consumoCombustiblePromedio": 0.38,
+      "nombreTransportista": "Roberto Méndez",
+      "telefonoTransportista": "+5493518889999",
+      "disponibilidad": true
+    },
+    "actualizarCamion": {
+      "dominio": "AAT-123",
+      "capacidadVolumen": 95.0,
+      "capacidadPeso": 48000.0,
+      "costoPorKm": 16.75,
+      "consumoCombustiblePromedio": 0.42,
+      "nombreTransportista": "Luis Rodríguez",
+      "telefonoTransportista": "+5493511112233",
+      "disponibilidad": true
+    }
+  },
+  "depositos": {
+    "crearDeposito": {
+      "nombre": "Nuevo Depósito Centro",
+      "direccion": "Av. Colón 2300",
+      "precioPorDia": 1950.0,
+      "latitud": -31.42,
+      "longitud": -64.19,
+      "ciudad": "Córdoba"
+    },
+    "actualizarDeposito": {
+      "nombre": "Depósito Central Cba. Actualizado",
+      "direccion": "Av. Circunvalación Oeste 5001",
+      "precioPorDia": 1950.0,
+      "latitud": -31.4301,
+      "longitud": -64.2001,
+      "ciudad": "Córdoba"
+    }
+  },
+  "ciudades": {
+    "crearCiudad": {
+      "nombre": "Alta Gracia",
+      "codigoPostal": "X5186"
+    },
+    "actualizarCiudad": {
+      "nombre": "Córdoba Capital",
+      "codigoPostal": "X5001"
+    }
+  },
+  "tarifas": {
+    "nuevoPrecioCombustible": {
+      "precioPorLitro": 1025.5
+    },
+    "nuevoCargoGestion": {
+      "costoPorTramo": 4500.0
+    }
+  },
+  "estados": {
+    "programarSolicitud": {
+      "costo": 41000.25,
+      "tiempo": 18000
+    },
+    "entregarSolicitud": {
+      "costo": 39500.5,
+      "tiempo": 17200
+    },
+    "marcarContenedorEnViaje": {
+      "nombre": "Depósito Central Cba."
+    },
+    "marcarContenedorEnDeposito": {
+      "nombre": "Almacén VM"
+    }
+  },
+  "authIds": {
+    "admin": "admin-user-id-12345",
+    "cliente1": "a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6",
+    "cliente2": "c7d8e9f0-f1a2-48b9-c0d1-e2f3a4b5c6d7",
+    "transportistas": [
+      "e3f4a5b6-c7d8-40e9-f1g2-h3i4j5k6l7m8",
+      "f9g0h1i2-j3k4-4l5m-n6o7-p8q9r0s1t2u3",
+      "t3333333-2222-3333-4444-555555555553",
+      "t4444444-2222-3333-4444-555555555554",
+      "t5555555-2222-3333-4444-555555555555",
+      "t6666666-2222-3333-4444-555555555556",
+      "t7777777-2222-3333-4444-555555555557",
+      "t8888888-2222-3333-4444-555555555558"
+    ]
+  },
+  "idsReferencia": {
+    "ciudades": {
+      "cordoba": 1,
+      "rioCuarto": 2,
+      "villaMaria": 3,
+      "rosario": 6,
+      "laRioja": 13
+    },
+    "depositos": {
+      "centralCba": 1,
+      "terminalSurCba": 2,
+      "rioCuarto": 3,
+      "villaMaria": 4,
+      "rosario": 7,
+      "laRioja": 15
+    },
+    "camiones": {
+      "semirremolquePesado": 1,
+      "camionRigido": 2,
+      "furgonLiviano": 3,
+      "camionAcoplado": 4
+    },
+    "clientes": {
+      "carlaGomez": 1,
+      "juanPerez": 2
+    },
+    "solicitudes": {
+      "cordaRosario": 1,
+      "rioCuartoLaRioja": 2
+    },
+    "contenedores": {
+      "contenedor1": 1,
+      "contenedor2": 2
+    },
+    "estados": {
+      "borrador": 1,
+      "programada": 2,
+      "enTransito": 3,
+      "entregada": 4,
+      "pendienteEntrega": 6,
+      "enDeposito": 7,
+      "enViaje": 8,
+      "estimado": 11,
+      "asignado": 12,
+      "iniciado": 13,
+      "finalizado": 14
+    }
+  },
+  "ejemplosCompletos": {
+    "flujoCompletoSolicitud": {
+      "paso1_crearCliente": {
+        "method": "POST",
+        "url": "/api/clientes",
+        "body": {
+          "nombre": "Pedro Sánchez",
+          "apellido": "Fernández",
+          "email": "pedro.sanchez@example.com",
+          "telefono": "+5493517778888",
+          "dni": "44556677"
+        }
+      },
+      "paso2_crearSolicitud": {
+        "method": "POST",
+        "url": "/api/solicitudes",
+        "body": {
+          "idCliente": 3,
+          "idDepositoOrigen": 2,
+          "idDepositoDestino": 8,
+          "volumenContenedor": 45.25,
+          "pesoContenedor": 15000.0
+        }
+      },
+      "paso3_programarSolicitud": {
+        "method": "PUT",
+        "url": "/api/solicitudes/3/programada",
+        "body": {
+          "costo": 52800.75,
+          "tiempo": 25200
+        }
+      },
+      "paso4_asignarRuta": {
+        "method": "POST",
+        "url": "/api/rutas/solicitud/3",
+        "body": {
+          "cantidadTramos": 3,
+          "cantidadDepositos": 4,
+          "tramos": [
+            {
+              "nroOrden": 1,
+              "origen": {
+                "id": 2,
+                "nombre": "Terminal Sur Cba.",
+                "direccion": "Calle 100 y Ruta 36",
+                "precioPorDia": 1600.0,
+                "latitud": -31.5,
+                "longitud": -64.12,
+                "ciudad": "Córdoba"
+              },
+              "destino": {
+                "id": 5,
+                "nombre": "Punto San Francisco",
+                "direccion": "Ruta Nacional 158 y 19",
+                "precioPorDia": 1050.0,
+                "latitud": -31.41,
+                "longitud": -62.05,
+                "ciudad": "San Francisco"
+              },
+              "costoEstimado": 15800.25,
+              "tiempoEstimadoSegundos": 5400,
+              "distanciaKilometros": 120.8
+            },
+            {
+              "nroOrden": 2,
+              "origen": {
+                "id": 5,
+                "nombre": "Punto San Francisco",
+                "direccion": "Ruta Nacional 158 y 19",
+                "precioPorDia": 1050.0,
+                "latitud": -31.41,
+                "longitud": -62.05,
+                "ciudad": "San Francisco"
+              },
+              "destino": {
+                "id": 10,
+                "nombre": "Plataforma Rafaela",
+                "direccion": "Bv. Roca 900",
+                "precioPorDia": 1000.0,
+                "latitud": -30.86,
+                "longitud": -61.5,
+                "ciudad": "Rafaela"
+              },
+              "costoEstimado": 14200.5,
+              "tiempoEstimadoSegundos": 4800,
+              "distanciaKilometros": 110.2
+            },
+            {
+              "nroOrden": 3,
+              "origen": {
+                "id": 10,
+                "nombre": "Plataforma Rafaela",
+                "direccion": "Bv. Roca 900",
+                "precioPorDia": 1000.0,
+                "latitud": -30.86,
+                "longitud": -61.5,
+                "ciudad": "Rafaela"
+              },
+              "destino": {
+                "id": 8,
+                "nombre": "Zárate Logística",
+                "direccion": "Ruta Nacional A012, Km 15",
+                "precioPorDia": 1950.0,
+                "latitud": -32.95,
+                "longitud": -60.65,
+                "ciudad": "Rosario"
+              },
+              "costoEstimado": 22800.0,
+              "tiempoEstimadoSegundos": 7200,
+              "distanciaKilometros": 150.5
+            }
+          ]
+        }
+      },
+      "paso5_asignarCamionTramo": {
+        "method": "PUT",
+        "url": "/api/tramos/1/asignado",
+        "body": {
+          "camionId": 5
+        }
+      },
+      "paso6_iniciarTramo": {
+        "method": "PUT",
+        "url": "/api/tramos/1/iniciado"
+      },
+      "paso7_finalizarTramo": {
+        "method": "PUT",
+        "url": "/api/tramos/1/finalizado"
+      },
+      "paso8_marcarEnTransito": {
+        "method": "PUT",
+        "url": "/api/solicitudes/3/en-transito"
+      },
+      "paso9_entregarSolicitud": {
+        "method": "PUT",
+        "url": "/api/solicitudes/3/entregada",
+        "body": {
+          "costo": 51500.25,
+          "tiempo": 24800
+        }
+      }
+    }
+  }
+}

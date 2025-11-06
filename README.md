@@ -2,6 +2,14 @@
 
 Este documento proporciona los pasos necesarios para levantar el entorno de microservicios mediante Docker Compose y obtener un `access_token` válido.
 
+## 📋 Contenido Adicional
+
+Además de esta guía, el proyecto incluye:
+
+- **📖 Documentación con Swagger**: Accede a la documentación interactiva de las APIs en `http://localhost:8080/swagger-ui.html`
+- **🎯 Datos Mock**: Archivo de datos de prueba en `./mocks/datos.json` para testing y desarrollo
+- **🗄️ Script de Base de Datos**: Archivo `./data-seed.sql` con datos iniciales para insertar en la BD mediante pgAdmin
+
 ## 1. 🚀 Inicio del Entorno (Docker Compose)
 
 Asegúrate de estar en el directorio raíz donde se encuentra el archivo `docker-compose.yml`.
@@ -18,15 +26,13 @@ docker compose build
 
 - **Iniciar los servicios:**
 
-<!-- end list -->
-
 ```bash
 docker compose up -d
 ```
 
 ---
 
-## 2\. 🌐 Acceso a los Servicios Web
+## 2. 🌐 Acceso a los Servicios Web
 
 Una vez que los contenedores estén levantados, puedes acceder a las interfaces de gestión:
 
@@ -36,13 +42,63 @@ Una vez que los contenedores estén levantados, puedes acceder a las interfaces 
 | **Keycloak Realm TPI**              | `http://localhost:8180/admin/tpi-backend/console/`  | Usar usuarios creados (ver tabla abajo)                    |
 | **PgAdmin** (Gestión de DB)         | `http://localhost:5050/`                            | **Email:** `admin@admin.com` / **Contraseña:** `admin123`  |
 | **API Gateway** (Punto de Entrada)  | `http://localhost:8080/`                            | Requiere autenticación JWT                                 |
+| **Swagger UI** (Documentación API)  | `http://localhost:8080/swagger-ui.html`             | Documentación interactiva de todos los microservicios      |
 | **Servicio Recursos**               | `http://localhost:8082/`                            | Requiere autenticación JWT                                 |
 | **Servicio Solicitudes**            | `http://localhost:8083/`                            | Requiere autenticación JWT                                 |
 | **Servicio Logística**              | `http://localhost:8084/`                            | Requiere autenticación JWT                                 |
 
 ---
 
-## 3\. 👥 Usuarios Pre-configurados
+## 3. 📖 Documentación con Swagger
+
+El proyecto incluye documentación interactiva de las APIs mediante Swagger UI:
+
+### Acceso a Swagger
+
+- **URL Principal**: `http://localhost:8080/swagger-ui.html`
+- **Configuración**: `http://localhost:8080/v3/api-docs/swagger-config`
+
+### Servicios Documentados
+
+- **Logística Service**: Gestión de rutas, tramos y camiones
+- **Solicitudes Service**: Gestión de solicitudes de transporte y clientes
+- **Recursos Service**: Gestión de tarifas, combustibles y parámetros
+
+### Características
+
+- Documentación interactiva en tiempo real
+- Posibilidad de hacer pruebas directamente desde la interfaz
+- Autenticación integrada con JWT
+- Descarga de especificaciones OpenAPI
+
+---
+
+## 4. 🎯 Datos Mock y Scripts
+
+### Datos Mock (`./mocks/datos.json`)
+
+Archivo JSON con datos de ejemplo para testing que incluye:
+
+- Ejemplos de solicitudes de transporte
+- Datos de clientes, camiones y depósitos
+- Estructuras completas para flujos de trabajo
+- IDs de referencia para desarrollo
+
+### Script de Base de Datos (`./data-seed.sql`)
+
+Script SQL completo con:
+
+- Inserción de ciudades y depósitos
+- Configuración de precios de combustible y cargos de gestión
+- Registro de camiones con transportistas
+- Clientes pre-configurados
+- Estados del sistema
+- Solicitudes de transporte de ejemplo
+- Contenedores y históricos de estado
+
+---
+
+## 5. 👥 Usuarios Pre-configurados
 
 **Realm:** `tpi-backend`
 
@@ -57,7 +113,7 @@ Una vez que los contenedores estén levantados, puedes acceder a las interfaces 
 
 ---
 
-## 4\. 🗝️ Obtener un `access_token` a través del Gateway (RECOMENDADO)
+## 6. 🗝️ Obtener un `access_token` a través del Gateway (RECOMENDADO)
 
 Para acceder a las APIs protegidas, obtén un `access_token` a través del endpoint proxy del **API Gateway**. El Gateway se encarga de realizar el intercambio de credenciales con Keycloak.
 
@@ -86,24 +142,35 @@ curl -X POST 'http://localhost:8080/auth/token' \
 
 ---
 
-## 5\. 🛠️ Conexión a la Base de Datos (pgAdmin)
+## 7. 🗄️ Conexión a la Base de Datos (pgAdmin)
 
 Para administrar la base de datos PostgreSQL, accede a pgAdmin (`http://localhost:5050/`) e introduce los siguientes parámetros de conexión:
 
-| Campo de Conexión                | Valor                                                   | Descripción                                                                                                               |
-| :------------------------------- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ |
-| **Server Name**                  | `tp-backend`                                            | Nombre descriptivo del servidor.                                                                                          |
-| **Nombre/Dirección de servidor** | `postgres`                                              | **Nombre del servicio de Docker Compose** (no `localhost` ni la IP externa, ya que pgAdmin está dentro de la red Docker). |
-| **Puerto**                       | `5432`                                                  | Puerto interno predeterminado de PostgreSQL.                                                                              |
-| **Base de Datos**                | `mydatabase`                                            | Nombre de la base de datos.                                                                                               |
-| **Usuario**                      | `myuser`                                                | Usuario de la base de datos.                                                                                              |
-| **Contraseña**                   | `secret`                              | (Generalmente se pide en una pestaña separada).                                                                           |
+### Configuración de Conexión
 
-> ℹ️ **Nota:** Si tu instancia de pgAdmin estuviera corriendo fuera de Docker, la dirección del servidor debería ser `localhost` o `127.0.0.1` (o la IP del host) y el puerto sería el mapeado externamente (ej: `5432`). Pero como pgAdmin está en el mismo `docker-compose.yml`, usa el **nombre del servicio: `postgres`**.
+| Campo de Conexión                | Valor        | Descripción                                                                                                               |
+| :------------------------------- | :----------- | :------------------------------------------------------------------------------------------------------------------------ |
+| **Server Name**                  | `tp-backend` | Nombre descriptivo del servidor.                                                                                          |
+| **Nombre/Dirección de servidor** | `postgres`   | **Nombre del servicio de Docker Compose** (no `localhost` ni la IP externa, ya que pgAdmin está dentro de la red Docker). |
+| **Puerto**                       | `5432`       | Puerto interno predeterminado de PostgreSQL.                                                                              |
+| **Base de Datos**                | `mydatabase` | Nombre de la base de datos.                                                                                               |
+| **Usuario**                      | `myuser`     | Usuario de la base de datos.                                                                                              |
+| **Contraseña**                   | `secret`     | Contraseña de la base de datos.                                                                                           |
+
+### Ejecutar Script de Datos Iniciales
+
+Una vez conectado a pgAdmin:
+
+1. Navega hasta la base de datos `mydatabase`
+2. Haz clic derecho y selecciona **Query Tool**
+3. Copia y pega el contenido del archivo `./data-seed.sql`
+4. Ejecuta el script (F5 o botón Execute)
+
+> ℹ️ **Nota:** El script `data-seed.sql` incluye todos los datos iniciales necesarios para que el sistema funcione correctamente.
 
 ---
 
-## 6\. 🔐 Usar el `access_token`
+## 8. 🔐 Usar el `access_token`
 
 Una vez obtenido el token, úsalo en la cabecera **`Authorization`** para acceder a los microservicios a través del Gateway:
 
@@ -118,7 +185,7 @@ curl -H "Authorization: Bearer <access_token>" http://localhost:8080/api/recurso
 
 ---
 
-## 7\. 📊 Estructura de Microservicios
+## 9. 📊 Estructura de Microservicios
 
 | Servicio         | Puerto Interno | Puerto Externo | Descripción                           |
 | :--------------- | :------------- | :------------- | :------------------------------------ |
@@ -129,7 +196,7 @@ curl -H "Authorization: Bearer <access_token>" http://localhost:8080/api/recurso
 
 ---
 
-## 8\. ⚙️ Comandos Útiles de Docker Compose
+## 10. ⚙️ Comandos Útiles de Docker Compose
 
 ### Ver estado de los contenedores:
 
@@ -159,7 +226,7 @@ docker compose down
 
 ---
 
-## 9\. 🔍 Verificación y Debugging
+## 11. 🔍 Verificación y Debugging
 
 ### Probar servicios individualmente (sin Gateway):
 
@@ -183,12 +250,12 @@ docker exec -it postgres psql -U myuser -d mydatabase
 
 ---
 
-## 10\. ❌ Solución de Problemas
+## 12. ❌ Solución de Problemas
 
 ### Error 401 en endpoints:
 
 - **Causa:** Token inválido, expirado o faltante
-- **Solución:** Obtener un nuevo token válido (Sección 4).
+- **Solución:** Obtener un nuevo token válido (Sección 6).
 
 ### Error de conexión a Keycloak:
 
@@ -198,17 +265,14 @@ docker exec -it postgres psql -U myuser -d mydatabase
 ### Usuario/contraseña incorrectos:
 
 - **Causa:** Credenciales erróneas
-- **Solución:** Usar las credenciales de la tabla de usuarios (Sección 3).
+- **Solución:** Usar las credenciales de la tabla de usuarios (Sección 5).
 
 ### Error "Realm does not exist":
 
 - **Causa:** Realm incorrecto en la URL
 - **Solución:** Usar `tpi-backend` (no `tpi-backend-app`)
 
----
+### Problemas con la base de datos:
 
-**✅ El sistema está configurado correctamente.** El error 401 en los endpoints es normal e indica que la autenticación está funcionando. Obtén un token siguiendo los pasos anteriores para acceder a las APIs.
-
-```eof
-
-```
+- **Causa:** Datos iniciales no cargados
+- **Solución:** Ejecutar el script `./data-seed.sql` en pgAdmin (Sección 7)

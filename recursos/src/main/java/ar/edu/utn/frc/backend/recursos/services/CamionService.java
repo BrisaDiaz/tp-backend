@@ -88,19 +88,25 @@ public class CamionService {
     // Marcar camión como ocupado
     @Transactional
     public Optional<CamionDto> setCamionOcupado(Integer id) {
-        return camionRepository.findById(id).map(camion -> {
-            camion.ocupar();
-            return modelMapper.map(camionRepository.save(camion), CamionDto.class);
-        });
+    return camionRepository.findById(id).map(camion -> {
+        if (!camion.getDisponibilidad()) {
+            throw new IllegalStateException("No se puede ocupar el camión: ya está ocupado");
+        }
+        camion.ocupar();
+        return modelMapper.map(camionRepository.save(camion), CamionDto.class);
+    });
     }
 
     // Marcar camión como libre  
     @Transactional
     public Optional<CamionDto> setCamionLibre(Integer id) {
-        return camionRepository.findById(id).map(camion -> {
-            camion.liberar();
-            return modelMapper.map(camionRepository.save(camion), CamionDto.class);
-        });
+    return camionRepository.findById(id).map(camion -> {
+        if (camion.getDisponibilidad()) {
+            throw new IllegalStateException("No se puede liberar el camión: ya está libre");
+        }
+        camion.liberar();
+        return modelMapper.map(camionRepository.save(camion), CamionDto.class);
+    });
     }
 
 }

@@ -36,14 +36,11 @@ spring:
 # 4. Configuración de Swagger (springdoc)
 # ----------------------------------------------------
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
-    # Ruta donde se accede a la documentación interactiva (ej: http://localhost:8083/swagger-ui.html)
     path: /swagger-ui.html
-  # Título base para la documentación (aparece en la UI de Swagger)
-  info:
-    title: Servicio Logística API
-    description: API para la gestión de rutas y planificación logística.
-    version: 1.0.0
+    enabled: true # Puede estar habilitado para desarrollo
 
 # ----------------------------------------------------
 # 5. Propiedades Personalizadas (app: Google Maps)
@@ -54,6 +51,7 @@ app:
     maps:
       api-key: AIzaSyCDVanxd8R9fY_NMxgCy86yaVMW97ZdQWI
       distance-matrix-url: https://maps.googleapis.com/maps/api/distancematrix/json
+
   # Configuración de URLs para otros microservicios
   recursos:
     base-url: http://recursos:8081/api # Puerto interno 8081

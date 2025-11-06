@@ -30,7 +30,10 @@ public class ResourceServerConfig {
         http
             // 1. Deshabilitar CSRF (estándar en APIs REST sin cookies)
             .csrf(csrf -> csrf.disable())
+             // 2. Rutas públicas de SpringDoc y Actuator
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
 
                 // === 1. RUTAS PUBLICAS (PERMIT ALL) ===
                 
@@ -49,7 +52,7 @@ public class ResourceServerConfig {
 
                 // Creación de Solicitud de envío
                 .requestMatchers(HttpMethod.POST, "/api/solicitudes").hasRole("CLIENTE") 
-                // Lectura de seguimiento, perfil y modificación de perfil (asume que la validación de propiedad se hace en el código)
+                // Lectura de seguimiento, perfil y modificación de perfil 
                 .requestMatchers(HttpMethod.GET, "/api/clientes/{id}").authenticated() 
                 .requestMatchers(HttpMethod.PUT, "/api/clientes/{id}").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/solicitudes/{id}").authenticated()
