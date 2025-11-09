@@ -17,42 +17,42 @@ public class GWConfig {
             // Swagger UI para Recursos
             .route("recursos-swagger", r -> r
                 .path("/recursos/swagger-ui/**", "/recursos/v3/api-docs/**")
+                // Filtro necesario para quitar el prefijo /recursos
                 .filters(f -> f.rewritePath("/recursos/(?<segment>.*)", "/${segment}"))
                 .uri("http://recursos:8081"))
 
             // Swagger UI para Solicitudes
             .route("solicitudes-swagger", r -> r
                 .path("/solicitudes/swagger-ui/**", "/solicitudes/v3/api-docs/**")
+                // Filtro necesario para quitar el prefijo /solicitudes
                 .filters(f -> f.rewritePath("/solicitudes/(?<segment>.*)", "/${segment}"))
                 .uri("http://solicitudes:8082"))
 
             // Swagger UI para Logística
             .route("logistica-swagger", r -> r
                 .path("/logistica/swagger-ui/**", "/logistica/v3/api-docs/**")
+                // Filtro necesario para quitar el prefijo /logistica
                 .filters(f -> f.rewritePath("/logistica/(?<segment>.*)", "/${segment}"))
                 .uri("http://logistica:8083"))
 
-            // ========== RUTAS DE API ==========
+            // ========== RUTAS DE API (PATH PRESERVADO) ==========
 
-            // Servicio de Recursos
+            // Servicio de Recursos: El path completo /api/recursos/** se envía a http://recursos:8081
             .route("recursos-service", r -> r
                 .path("/api/recursos/**")
-                .filters(f -> f.rewritePath("/api/recursos/(?<segment>.*)", "/api/${segment}"))
                 .uri("http://recursos:8081"))
 
-            // Servicio de Solicitudes
+            // Servicio de Solicitudes: El path completo /api/solicitudes/** se envía a http://solicitudes:8082
             .route("solicitudes-service", r -> r
                 .path("/api/solicitudes/**")
-                .filters(f -> f.rewritePath("/api/solicitudes/(?<segment>.*)", "/api/${segment}"))
                 .uri("http://solicitudes:8082"))
 
-            // Servicio de Logística
+            // Servicio de Logística: El path completo /api/logistica/** se envía a http://logistica:8083
             .route("logistica-service", r -> r
                 .path("/api/logistica/**")
-                .filters(f -> f.rewritePath("/api/logistica/(?<segment>.*)", "/api/${segment}"))
                 .uri("http://logistica:8083"))
 
-            // Rutas específicas para mantener compatibilidad
+            // Rutas específicas para mantener compatibilidad (Path Preservado)
             .route("recursos-camiones", r -> r
                 .path("/api/camiones/**")
                 .uri("http://recursos:8081"))

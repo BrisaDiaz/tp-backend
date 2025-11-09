@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class HistoricoEstadoContenedorService {
+    private static final Logger log = LoggerFactory.getLogger(HistoricoEstadoContenedorService.class);
+
     @Autowired
     private HistoricoEstadoContenedorRepository historicoEstadoRepository;
     @Autowired
@@ -31,6 +35,8 @@ public class HistoricoEstadoContenedorService {
         LocalDateTime fechaDesde, 
         String descripcion
     ) {
+        log.info("Creando nuevo histórico para Contenedor ID: {} con estado: {} (Desde: {})", 
+                 contenedor.getId(), estado.getNombre(), fechaDesde);
         HistoricoEstadoContenedor nuevoHistorico = HistoricoEstadoContenedor.builder()
             .contenedor(contenedor)
             .estado(estado)
@@ -38,20 +44,30 @@ public class HistoricoEstadoContenedorService {
             .descripcion(descripcion)
             .build();
 
-        return historicoEstadoRepository.save(nuevoHistorico);
+        HistoricoEstadoContenedor historicoGuardado = historicoEstadoRepository.save(nuevoHistorico);
+        log.debug("Nuevo histórico guardado con ID: {}", historicoGuardado.getId());
+        return historicoGuardado;
     }
 
     // Buscar un historicoEstado por ID
     public Optional<HistoricoEstadoContenedorDto> buscarPorId(Integer id) {
+        log.info("Buscando histórico de estado por ID: {}", id);
         Optional<HistoricoEstadoContenedor> historicoEstadoOpt = historicoEstadoRepository.findById(id);
+        if (historicoEstadoOpt.isPresent()) {
+            log.info("Histórico de estado encontrado con ID: {}", id);
+        } else {
+            log.warn("Histórico de estado no encontrado con ID: {}", id);
+        }
         return historicoEstadoOpt
                 .map(historicoEstado -> modelMapper.map(historicoEstado, HistoricoEstadoContenedorDto.class));
     }
 
     // Buscar todos los historicos de un contenedor por su ID en orden ascendente de fechaHoraDesde
     public List<HistoricoEstadoContenedorDto> buscarHistoricoPorContenedorId(Integer contenedorId) {
+        log.info("Buscando histórico por Contenedor ID: {}", contenedorId);
         List<HistoricoEstadoContenedor> historicos = historicoEstadoRepository
             .findByContenedorIdOrderByFechaHoraDesdeAsc(contenedorId);
+        log.info("Se encontraron {} registros de histórico para Contenedor ID: {}", historicos.size(), contenedorId);
 
         return historicos.stream()
             .map(this::mapearADto)
@@ -60,11 +76,15 @@ public class HistoricoEstadoContenedorService {
 
     @Transactional
     public void cerrarHistoricoAnterior(Integer contenedorId, LocalDateTime fechaHasta) {
+        log.debug("Intentando cerrar histórico anterior para Contenedor ID: {} con fechaHasta: {}", contenedorId, fechaHasta);
         historicoEstadoRepository.findByContenedorIdAndFechaHoraHastaIsNull(contenedorId)
                 .ifPresent(historicoAnterior -> {
+                    log.info("Cerrando histórico ID: {} para Contenedor ID: {}", historicoAnterior.getId(), contenedorId);
                     historicoAnterior.setFechaHoraHasta(fechaHasta);
                     historicoEstadoRepository.save(historicoAnterior);
+                    log.debug("Histórico ID: {} cerrado exitosamente.", historicoAnterior.getId());
                 });
+        log.debug("Finalizado intento de cierre de histórico anterior para Contenedor ID: {}", contenedorId);
     }
 
     private HistoricoEstadoContenedorDto mapearADto(HistoricoEstadoContenedor entity) {

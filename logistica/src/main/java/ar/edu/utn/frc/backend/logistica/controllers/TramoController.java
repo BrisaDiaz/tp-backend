@@ -2,6 +2,8 @@ package ar.edu.utn.frc.backend.logistica.controllers;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +31,8 @@ import jakarta.validation.Valid;
 @Tag(name = "2. Gestión de Tramos", description = "APIs para gestionar tramos de transporte - Asignación, inicio y finalización de tramos")
 @SecurityRequirement(name = "bearerAuth")
 public class TramoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(TramoController.class);
 
     @Schema(description = "Request para asignar camión a tramo")
     public record AsignarCamionRequest(
@@ -68,9 +72,17 @@ public class TramoController {
             
             @Valid @RequestBody AsignarCamionRequest request) {
         
+        logger.info("PUT /api/tramos/{}/asignado - Intentando asignar Camión ID: {} al Tramo ID: {}", tramoId, request.camionId(), tramoId);
+
         return tramoService.asignarCamion(tramoId, request.camionId())
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(tramoDto -> {
+                    logger.info("Camión ID: {} asignado exitosamente al Tramo ID: {}.", request.camionId(), tramoId);
+                    return ResponseEntity.ok(tramoDto);
+                })
+                .orElseGet(() -> {
+                    logger.warn("Fallo al asignar camión ID: {} a Tramo ID: {}. Tramo o Camión no encontrado, o conflicto.", request.camionId(), tramoId);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @Operation(
@@ -100,10 +112,14 @@ public class TramoController {
             @Parameter(description = "ID del camión", example = "1", required = true) 
             @PathVariable Integer camionId) {
         
+        logger.info("GET /api/tramos/asignado/{} - Solicitud de tramos asignados para Camión ID: {}", camionId, camionId);
+
         List<TramoDto> tramos = tramoService.buscarTramosAsignadosCamion(camionId);
         if (tramos.isEmpty()) {
+            logger.info("No se encontraron tramos asignados para Camión ID: {}.", camionId);
             return ResponseEntity.noContent().build();
         }
+        logger.info("Se encontraron {} tramos asignados para Camión ID: {}.", tramos.size(), camionId);
         return ResponseEntity.ok(tramos);
     }
 
@@ -135,9 +151,17 @@ public class TramoController {
             @Parameter(description = "ID del tramo a iniciar", example = "1", required = true) 
             @PathVariable Integer tramoId) {
         
+        logger.info("PUT /api/tramos/{}/iniciado - Intentando iniciar Tramo ID: {}", tramoId, tramoId);
+
         return tramoService.iniciarTramo(tramoId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(tramoDto -> {
+                    logger.info("Tramo ID: {} iniciado exitosamente.", tramoId);
+                    return ResponseEntity.ok(tramoDto);
+                })
+                .orElseGet(() -> {
+                    logger.warn("Fallo al iniciar Tramo ID: {}. Tramo no encontrado o conflicto de estado.", tramoId);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @Operation(
@@ -168,8 +192,16 @@ public class TramoController {
             @Parameter(description = "ID del tramo a finalizar", example = "1", required = true) 
             @PathVariable Integer tramoId) {
         
+        logger.info("PUT /api/tramos/{}/finalizado - Intentando finalizar Tramo ID: {}", tramoId, tramoId);
+
         return tramoService.finalizarTramo(tramoId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(tramoDto -> {
+                    logger.info("Tramo ID: {} finalizado exitosamente.", tramoId);
+                    return ResponseEntity.ok(tramoDto);
+                })
+                .orElseGet(() -> {
+                    logger.warn("Fallo al finalizar Tramo ID: {}. Tramo no encontrado o conflicto de estado.", tramoId);
+                    return ResponseEntity.notFound().build();
+                });
     }
 }

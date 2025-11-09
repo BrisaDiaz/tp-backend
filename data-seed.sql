@@ -277,7 +277,7 @@ INSERT INTO historico_estado_contenedor (
 (
     '2025-02-15 10:30:00', -- fecha_hora_desde (misma que la solicitud)
     NULL, -- fecha_hora_hasta (NULL porque es el estado actual)
-    'Tu contenedor esta en espera para ser retirado.',
+    'Tu contenedor se encuentra en espera de ser retirado.',
     (SELECT id FROM estado WHERE nombre = 'Pendiente de Entrega'),
     (SELECT id FROM contenedor WHERE volumen = 25.50 AND peso = 8500.00)
 );
@@ -293,7 +293,7 @@ INSERT INTO historico_estado_contenedor (
 (
     '2025-02-16 14:45:00', -- fecha_hora_desde (misma que la solicitud)
     NULL, -- fecha_hora_hasta (NULL porque es el estado actual)
-    'Tu contenedor esta en espera para ser retirado.',
+    'Tu contenedor se encuentra en espera de ser retirado.',
     (SELECT id FROM estado WHERE nombre = 'Pendiente de Entrega'),
     (SELECT id FROM contenedor WHERE volumen = 18.75 AND peso = 6200.00)
 );

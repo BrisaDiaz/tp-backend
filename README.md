@@ -10,6 +10,8 @@ Además de esta guía, el proyecto incluye:
 - **🎯 Datos Mock**: Archivo de datos de prueba en `./mocks/datos.json` para testing y desarrollo
 - **🗄️ Script de Base de Datos**: Archivo `./data-seed.sql` con datos iniciales para insertar en la BD mediante pgAdmin
 
+---
+
 ## 1. 🚀 Inicio del Entorno (Docker Compose)
 
 Asegúrate de estar en el directorio raíz donde se encuentra el archivo `docker-compose.yml`.
@@ -26,30 +28,32 @@ docker compose build
 
 - **Iniciar los servicios:**
 
+<!-- end list -->
+
 ```bash
 docker compose up -d
 ```
 
 ---
 
-## 2. 🌐 Acceso a los Servicios Web
+## 2\. 🌐 Acceso a los Servicios Web
 
 Una vez que los contenedores estén levantados, puedes acceder a las interfaces de gestión:
 
-| Servicio                            | URL de Acceso                                       | Credenciales de Acceso (Iniciales)                         |
-| :---------------------------------- | :-------------------------------------------------- | :--------------------------------------------------------- |
-| **Keycloak** (Autenticación)        | `http://localhost:8180/admin/master/console/`       | **Usuario:** `admin` / **Contraseña:** `admin123`          |
-| **Keycloak Realm TPI**              | `http://localhost:8180/admin/tpi-backend/console/`  | Usar usuarios creados (ver tabla abajo)                    |
-| **PgAdmin** (Gestión de DB)         | `http://localhost:5050/`                            | **Email:** `admin@admin.com` / **Contraseña:** `admin123`  |
-| **API Gateway** (Punto de Entrada)  | `http://localhost:8080/`                            | Requiere autenticación JWT                                 |
-| **Swagger UI** (Documentación API)  | `http://localhost:8080/swagger-ui.html`             | Documentación interactiva de todos los microservicios      |
-| **Servicio Recursos**               | `http://localhost:8082/`                            | Requiere autenticación JWT                                 |
-| **Servicio Solicitudes**            | `http://localhost:8083/`                            | Requiere autenticación JWT                                 |
-| **Servicio Logística**              | `http://localhost:8084/`                            | Requiere autenticación JWT                                 |
+| Servicio                           | URL de Acceso                                      | Credenciales de Acceso (Iniciales)                        |
+| :--------------------------------- | :------------------------------------------------- | :-------------------------------------------------------- |
+| **Keycloak** (Autenticación)       | `http://localhost:8180/admin/master/console/`      | **Usuario:** `admin` / **Contraseña:** `admin123`         |
+| **Keycloak Realm TPI**             | `http://localhost:8180/admin/tpi-backend/console/` | Usar usuarios creados (ver tabla abajo)                   |
+| **PgAdmin** (Gestión de DB)        | `http://localhost:5050/`                           | **Email:** `admin@admin.com` / **Contraseña:** `admin123` |
+| **API Gateway** (Punto de Entrada) | `http://localhost:8080/`                           | Requiere autenticación JWT                                |
+| **Swagger UI** (Documentación API) | `http://localhost:8080/swagger-ui.html`            | Documentación interactiva de todos los microservicios     |
+| **Servicio Recursos**              | `http://localhost:8082/`                           | Requiere autenticación JWT                                |
+| **Servicio Solicitudes**           | `http://localhost:8083/`                           | Requiere autenticación JWT                                |
+| **Servicio Logística**             | `http://localhost:8084/`                           | Requiere autenticación JWT                                |
 
 ---
 
-## 3. 📖 Documentación con Swagger
+## 3\. 📖 Documentación con Swagger
 
 El proyecto incluye documentación interactiva de las APIs mediante Swagger UI:
 
@@ -73,7 +77,7 @@ El proyecto incluye documentación interactiva de las APIs mediante Swagger UI:
 
 ---
 
-## 4. 🎯 Datos Mock y Scripts
+## 4\. 🎯 Datos Mock y Scripts
 
 ### Datos Mock (`./mocks/datos.json`)
 
@@ -98,22 +102,22 @@ Script SQL completo con:
 
 ---
 
-## 5. 👥 Usuarios Pre-configurados
+## 5\. 👥 Usuarios Pre-configurados
 
 **Realm:** `tpi-backend`
 
-| Usuario             | Email                         | Contraseña | Rol             | Descripción               |
+| Usuario             | Email                         | Contraseña | Rol             | Descripción               |
 | :------------------ | :---------------------------- | :--------- | :-------------- | :------------------------ |
-| **admin01**         | `admin01@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
-| **admin02**         | `admin02@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
-| **cliente01**       | `cliente01@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
-| **cliente02**       | `cliente02@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
-| **transportista01** | `transportista01@example.com` | `Clave123` | `transportista` | Usuario transportista     |
-| **transportista02** | `transportista02@example.com` | `Clave123` | `transportista` | Usuario transportista     |
+| **admin01**         | `admin01@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
+| **admin02**         | `admin02@example.com`         | `Clave123` | `admin`         | Administrador del sistema |
+| **cliente01**       | `cliente01@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
+| **cliente02**       | `cliente02@example.com`       | `Clave123` | `cliente`       | Usuario cliente           |
+| **transportista01** | `transportista01@example.com` | `Clave123` | `transportista` | Usuario transportista     |
+| **transportista02** | `transportista02@example.com` | `Clave123` | `transportista` | Usuario transportista     |
 
 ---
 
-## 6. 🗝️ Obtener un `access_token` a través del Gateway (RECOMENDADO)
+## 6\. 🗝️ Obtener un `access_token` a través del Gateway (RECOMENDADO)
 
 Para acceder a las APIs protegidas, obtén un `access_token` a través del endpoint proxy del **API Gateway**. El Gateway se encarga de realizar el intercambio de credenciales con Keycloak.
 
@@ -142,7 +146,7 @@ curl -X POST 'http://localhost:8080/auth/token' \
 
 ---
 
-## 7. 🗄️ Conexión a la Base de Datos (pgAdmin)
+## 7\. 🗄️ Conexión a la Base de Datos (pgAdmin)
 
 Para administrar la base de datos PostgreSQL, accede a pgAdmin (`http://localhost:5050/`) e introduce los siguientes parámetros de conexión:
 
@@ -161,16 +165,16 @@ Para administrar la base de datos PostgreSQL, accede a pgAdmin (`http://localhos
 
 Una vez conectado a pgAdmin:
 
-1. Navega hasta la base de datos `mydatabase`
-2. Haz clic derecho y selecciona **Query Tool**
-3. Copia y pega el contenido del archivo `./data-seed.sql`
-4. Ejecuta el script (F5 o botón Execute)
+1.  Navega hasta la base de datos `mydatabase`
+2.  Haz clic derecho y selecciona **Query Tool**
+3.  Copia y pega el contenido del archivo `./data-seed.sql`
+4.  Ejecuta el script (F5 o botón Execute)
 
 > ℹ️ **Nota:** El script `data-seed.sql` incluye todos los datos iniciales necesarios para que el sistema funcione correctamente.
 
 ---
 
-## 8. 🔐 Usar el `access_token`
+## 8\. 🔐 Usar el `access_token`
 
 Una vez obtenido el token, úsalo en la cabecera **`Authorization`** para acceder a los microservicios a través del Gateway:
 
@@ -179,37 +183,29 @@ Una vez obtenido el token, úsalo en la cabecera **`Authorization`** para accede
 curl -H "Authorization: Bearer <access_token>" http://localhost:8080/api/recursos/camiones
 ```
 
-| Cabecera           | Valor                             |
-| :----------------- | :-------------------------------- |
-| **Authorization**  | `Bearer <access_token_extraido>`  |
+| Cabecera          | Valor                            |
+| :---------------- | :------------------------------- |
+| **Authorization** | `Bearer <access_token_extraido>` |
 
 ---
 
-## 9. 📊 Estructura de Microservicios
+## 9\. 📊 Estructura de Microservicios
 
-| Servicio         | Puerto Interno | Puerto Externo | Descripción                           |
-| :--------------- | :------------- | :------------- | :------------------------------------ |
-| **Gateway**      | 8080           | 8080           | API Gateway - Punto de entrada único  |
-| **Recursos**     | 8081           | 8082           | Gestión de camiones y contenedores    |
-| **Solicitudes**  | 8082           | 8083           | Gestión de solicitudes de transporte  |
-| **Logística**    | 8083           | 8084           | Planificación de rutas y logística    |
+| Servicio        | Puerto Interno | Puerto Externo | Descripción                          |
+| :-------------- | :------------- | :------------- | :----------------------------------- |
+| **Gateway**     | 8080           | 8080           | API Gateway - Punto de entrada único |
+| **Recursos**    | 8081           | 8082           | Gestión de camiones y contenedores   |
+| **Solicitudes** | 8082           | 8083           | Gestión de solicitudes de transporte |
+| **Logística**   | 8083           | 8084           | Planificación de rutas y logística   |
 
 ---
 
-## 10. ⚙️ Comandos Útiles de Docker Compose
+## 10\. ⚙️ Comandos Útiles de Docker Compose
 
 ### Ver estado de los contenedores:
 
 ```bash
 docker compose ps
-```
-
-### Ver logs de servicios:
-
-```bash
-docker compose logs gateway
-docker compose logs keycloak
-docker compose logs recursos
 ```
 
 ### Reiniciar servicios:
@@ -226,7 +222,31 @@ docker compose down
 
 ---
 
-## 11. 🔍 Verificación y Debugging
+## 11\. 🪵 Visualización de Logs (Debugging)
+
+Para ver la salida de la consola de los microservicios, utiliza el comando `docker compose logs` seguido del nombre del servicio (e.g., `gateway`, `recursos`, `solicitudes`, `logistica`).
+
+### Logs en tiempo real (`-f`)
+
+Para seguir los logs mientras ocurren los eventos (ideal para debugging):
+
+```bash
+docker compose logs -f gateway
+docker compose logs -f recursos
+# etc.
+```
+
+### Logs sin seguir (`--tail` para ver el final)
+
+Para ver el historial de logs y volver a la consola:
+
+```bash
+docker compose logs --tail 100 recursos
+```
+
+---
+
+## 12\. 🔍 Verificación y Debugging
 
 ### Probar servicios individualmente (sin Gateway):
 
@@ -250,7 +270,7 @@ docker exec -it postgres psql -U myuser -d mydatabase
 
 ---
 
-## 12. ❌ Solución de Problemas
+## 13\. ❌ Solución de Problemas
 
 ### Error 401 en endpoints:
 

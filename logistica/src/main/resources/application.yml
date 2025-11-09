@@ -49,7 +49,7 @@ app:
   # Se utiliza una estructura anidada para organizar las configuraciones del servicio externo
   google:
     maps:
-      api-key: AIzaSyCDVanxd8R9fY_NMxgCy86yaVMW97ZdQWI
+      api-key: ${GOOGLE_MAPS_API_KEY}
       distance-matrix-url: https://maps.googleapis.com/maps/api/distancematrix/json
 
   # Configuración de URLs para otros microservicios
@@ -65,11 +65,22 @@ management:
   endpoints:
     web:
       exposure:
-        include: 'health,info'
+        # Se agregan 'metrics' y 'prometheus' a los endpoints expuestos.
+        include: 'health,info,metrics,prometheus'
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    # Muestra el nombre completo de las etiquetas de las métricas (útil para Prometheus)
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
 
 logging:
   level:
-    ar.edu.utn.frc.backend.recursos: DEBUG
+    ar.edu.utn.frc.backend.logistica: DEBUG
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
     org.hibernate: DEBUG

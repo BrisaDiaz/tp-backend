@@ -3,6 +3,8 @@ package ar.edu.utn.frc.backend.logistica.controllers;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.utn.frc.backend.logistica.dto.RutaDto;
 import ar.edu.utn.frc.backend.logistica.dto.RutaTentativaDto;
+import ar.edu.utn.frc.backend.logistica.dto.TramoDto; // Importación de TramoDto
 import ar.edu.utn.frc.backend.logistica.services.RutaService;
+import ar.edu.utn.frc.backend.logistica.services.TramoService; // Importación de TramoService
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,8 +37,13 @@ import jakarta.validation.Valid;
 @SecurityRequirement(name = "bearerAuth") // Aplica seguridad a todos los endpoints del controller
 public class RutaController {
     
+    private static final Logger logger = LoggerFactory.getLogger(RutaController.class);
+
     @Autowired
     private RutaService rutaService;
+    
+    @Autowired
+    private TramoService tramoService;
 
     @Operation(
         summary = "Obtener rutas tentativas",
@@ -64,14 +73,56 @@ public class RutaController {
             @Parameter(description = "ID de la solicitud de transporte", example = "1", required = true) 
             @PathVariable Integer solicitudId) {
         
+        logger.info("GET /api/rutas/tentativas/{} - Solicitud de rutas tentativas.", solicitudId);
+        
         try {
             List<RutaTentativaDto> rutasTentativas = rutaService.obtenerTentativas(solicitudId);
+            logger.info("Rutas tentativas generadas para Solicitud ID {}: {} encontradas.", solicitudId, rutasTentativas.size());
             return ResponseEntity.ok(rutasTentativas);
         } catch (Exception e) {
+            logger.error("Error interno al obtener rutas tentativas para Solicitud ID {}: {}", solicitudId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    @Operation(
+        summary = "Obtener tramos por ID de ruta",
+        description = """
+            Retorna la lista de tramos (segmentos) que componen la ruta definitiva asignada.
+            
+            **Roles permitidos:** ADMIN
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Lista de tramos de la ruta obtenida exitosamente",
+            content = @Content(schema = @Schema(implementation = TramoDto[].class))
+        ),
+        @ApiResponse(responseCode = "401", description = "No autenticado - Token JWT inválido o faltante"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - Se requiere rol ADMIN"),
+        @ApiResponse(responseCode = "404", description = "Ruta o tramos no encontrados")
+    })
+    @GetMapping("/{id}/tramos")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<TramoDto>> obtenerTramosPorRuta(
+            @Parameter(description = "ID de la ruta", example = "10", required = true) 
+            @PathVariable Integer id) {
+        
+        logger.info("GET /api/rutas/{}/tramos - Solicitud para obtener tramos de la ruta ID {}.", id, id);
+        
+        List<TramoDto> tramos = tramoService.buscarPorRuta(id);
+
+        if (tramos.isEmpty()) {
+            logger.warn("No se encontraron tramos para la ruta ID {}.", id);
+            return ResponseEntity.notFound().build();
+        }
+
+        logger.info("Se encontraron {} tramos para la ruta ID {}.", tramos.size(), id);
+        return ResponseEntity.ok(tramos);
+    }
+    
     @Operation(
         summary = "Asignar ruta a solicitud",
         description = """
@@ -102,11 +153,16 @@ public class RutaController {
             
             @Valid @RequestBody RutaTentativaDto rutaDto) {
 
+        logger.info("POST /api/rutas/solicitud/{} - Intentando asignar ruta a solicitud.", solicitudId);
+        logger.debug("Ruta tentativa recibida para Solicitud ID {}: {}", solicitudId, rutaDto);
+
         Optional<RutaDto> rutaAsignada = rutaService.asignarRutaASolicitud(solicitudId, rutaDto);
         
         if (rutaAsignada.isPresent()) {
+            logger.info("Ruta asignada exitosamente a Solicitud ID {}. Ruta ID: {}", solicitudId, rutaAsignada.get().getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(rutaAsignada.get());
         } else {
+            logger.warn("Fallo al asignar ruta a Solicitud ID {}. Posiblemente solicitud no encontrada o conflicto.", solicitudId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -137,11 +193,15 @@ public class RutaController {
             @Parameter(description = "ID de la solicitud de transporte", example = "1", required = true) 
             @PathVariable Integer solicitudId) {
         
+        logger.info("GET /api/rutas/solicitud/{} - Solicitud de ruta asignada.", solicitudId);
+
         Optional<RutaDto> rutaAsignada = rutaService.obtenerRutaAsignada(solicitudId);
         
         if (rutaAsignada.isPresent()) {
+            logger.info("Ruta asignada encontrada para Solicitud ID {}. Ruta ID: {}", solicitudId, rutaAsignada.get().getId());
             return ResponseEntity.ok(rutaAsignada.get());
         } else {
+            logger.warn("Ruta asignada no encontrada para Solicitud ID {}.", solicitudId);
             return ResponseEntity.notFound().build();
         }
     }

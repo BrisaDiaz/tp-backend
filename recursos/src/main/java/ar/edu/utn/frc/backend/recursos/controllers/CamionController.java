@@ -2,7 +2,10 @@ package ar.edu.utn.frc.backend.recursos.controllers;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,7 @@ import jakarta.validation.Valid;
 @Tag(name = "1. Gestión de Camiones", description = "APIs para gestionar la flota de camiones - Altas, bajas, modificaciones y control de estado")
 @SecurityRequirement(name = "bearerAuth")
 public class CamionController {
+    private static final Logger logger = LoggerFactory.getLogger(CamionController.class);
 
     @Autowired
     private CamionService camionService;
@@ -64,7 +68,9 @@ public class CamionController {
         @Parameter(description = "Peso mínimo requerido en kg", example = "10000.0") 
         @RequestParam(name = "peso", required = false, defaultValue = "0") BigDecimal peso
     ) {
+        logger.info("INICIO - GET /api/camiones/libres. Filtros: Volumen={}, Peso={}", volumen, peso);
         List<CamionDto> camiones = camionService.buscarCamionesDisponibles(volumen, peso);
+        logger.info("FIN - GET /api/camiones/libres. {} camiones disponibles encontrados.", camiones.size());
         return ResponseEntity.ok().body(camiones);
     }
 
@@ -90,7 +96,9 @@ public class CamionController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<CamionDto>> obtenerTodosLosCamiones() {
+        logger.info("INICIO - GET /api/camiones. Obteniendo todos los camiones.");
         List<CamionDto> camiones = camionService.buscarTodosLosCamiones();
+        logger.info("FIN - GET /api/camiones. Total de {} camiones encontrados.", camiones.size());
         return ResponseEntity.ok().body(camiones);
     }
 
@@ -118,9 +126,17 @@ public class CamionController {
     public ResponseEntity<CamionDto> obtenerCamionPorId(
             @Parameter(description = "ID del camión", example = "1", required = true) 
             @PathVariable Integer id) {
-        return camionService.buscarPorId(id)
-                .map(camionDto -> ResponseEntity.ok().body(camionDto))
-                .orElse(ResponseEntity.notFound().build());
+
+        logger.info("INICIO - GET /api/camiones/{}. Buscando camión por ID.", id);
+        Optional<CamionDto> result = camionService.buscarPorId(id);
+        if (result.isPresent()) {
+            logger.info("FIN - GET /api/camiones/{}. Camión encontrado.", id);
+        } else {
+            logger.warn("FIN - GET /api/camiones/{}. Camión no encontrado (404).", id);
+        }
+        return result
+             .map(camionDto -> ResponseEntity.ok().body(camionDto))
+             .orElse(ResponseEntity.notFound().build());
     }
 
     @Operation(
@@ -147,7 +163,15 @@ public class CamionController {
     public ResponseEntity<CamionDto> obtenerCamionPorDominio(
             @Parameter(description = "Dominio del camión (patente)", example = "ABC123", required = true) 
             @RequestParam String dominio) {
-        return camionService.buscarPorDominio(dominio)
+        
+        logger.info("INICIO - GET /api/camiones/dominio?dominio={}. Buscando camión por dominio.", dominio);
+        Optional<CamionDto> result = camionService.buscarPorDominio(dominio);
+        if (result.isPresent()) {
+            logger.info("FIN - GET /api/camiones/dominio. Camión con dominio {} encontrado.", dominio);
+        } else {
+            logger.warn("FIN - GET /api/camiones/dominio. Camión con dominio {} no encontrado (404).", dominio);
+        }
+        return result
                 .map(camionDto -> ResponseEntity.ok().body(camionDto))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -176,7 +200,9 @@ public class CamionController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CamionDto> agregarCamion(
             @Valid @RequestBody CamionDto camionDto) {
+        logger.info("INICIO - POST /api/camiones. Creando nuevo camión con Dominio: {}", camionDto.getDominio());
         CamionDto camionGuardado = camionService.guardarCamion(camionDto);
+        logger.info("FIN - POST /api/camiones. Camión ID {} creado exitosamente.", camionGuardado.getId());
         return status(HttpStatus.CREATED).body(camionGuardado);
     }
 
@@ -205,10 +231,17 @@ public class CamionController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CamionDto> actualizarCamion(
             @Parameter(description = "ID del camión a actualizar", example = "1", required = true) 
-            @PathVariable Integer camionId, 
-            
+            @PathVariable Integer camionId,
             @Valid @RequestBody CamionDto camionDto) {
-        return camionService.actualizarCamion(camionId, camionDto)
+
+        logger.info("INICIO - PUT /api/camiones/{}. Actualizando camión.", camionId);
+        Optional<CamionDto> result = camionService.actualizarCamion(camionId, camionDto);
+        if (result.isPresent()) {
+            logger.info("FIN - PUT /api/camiones/{}. Camión actualizado con éxito. Dominio: {}", camionId, result.get().getDominio());
+        } else {
+            logger.warn("FIN - PUT /api/camiones/{}. Camión no encontrado para actualizar (404).", camionId);
+        }
+        return result
                 .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -234,9 +267,12 @@ public class CamionController {
     public ResponseEntity<Void> eliminarCamion(
             @Parameter(description = "ID del camión a eliminar", example = "1", required = true) 
             @PathVariable Integer id) {
+        logger.warn("INICIO - DELETE /api/camiones/{}. Intentando eliminar camión.", id);
         if (camionService.eliminarCamion(id)) {
+            logger.info("FIN - DELETE /api/camiones/{}. Camión eliminado con éxito (204).", id);
             return ResponseEntity.noContent().build();
-        }
+    }
+        logger.warn("FIN - DELETE /api/camiones/{}. Camión no encontrado para eliminar (404).", id);
         return ResponseEntity.notFound().build();
     }
 
@@ -263,9 +299,16 @@ public class CamionController {
     public ResponseEntity<CamionDto> setOcupado(
             @Parameter(description = "ID del camión", example = "1", required = true) 
             @PathVariable Integer id) {
-        return camionService.setCamionOcupado(id)
-                .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
-                .orElse(ResponseEntity.notFound().build());
+        logger.info("INICIO - PUT /api/camiones/{}/ocupado. Marcando camión como OCUPADO.", id);
+        Optional<CamionDto> result = camionService.setCamionOcupado(id);
+        if (result.isPresent()) {
+            logger.info("FIN - PUT /api/camiones/{}/ocupado. Camión marcado como OCUPADO con éxito.", id);
+        } else {
+            logger.warn("FIN - PUT /api/camiones/{}/ocupado. Camión no encontrado (404).", id);
+        }
+        return result
+        .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
+        .orElse(ResponseEntity.notFound().build());
     }
 
     @Operation(
@@ -291,8 +334,15 @@ public class CamionController {
     public ResponseEntity<CamionDto> setLibre(
             @Parameter(description = "ID del camión", example = "1", required = true) 
             @PathVariable Integer id) {
-        return camionService.setCamionLibre(id)
-                .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
-                .orElse(ResponseEntity.notFound().build());
+        logger.info("INICIO - PUT /api/camiones/{}/libre. Marcando camión como LIBRE.", id);
+        Optional<CamionDto> result = camionService.setCamionLibre(id);
+        if (result.isPresent()) {
+            logger.info("FIN - PUT /api/camiones/{}/libre. Camión marcado como LIBRE con éxito.", id);
+        } else {
+            logger.warn("FIN - PUT /api/camiones/{}/libre. Camión no encontrado (404).", id);
+        }
+        return result
+        .map(camionActualizado -> ResponseEntity.ok().body(camionActualizado))
+        .orElse(ResponseEntity.notFound().build());
     }
 }

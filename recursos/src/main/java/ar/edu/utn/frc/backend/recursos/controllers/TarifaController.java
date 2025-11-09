@@ -1,5 +1,9 @@
 package ar.edu.utn.frc.backend.recursos.controllers;
 
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +32,14 @@ import jakarta.validation.Valid;
 @Tag(name = "4. Gestión de Tarifas", description = "APIs para gestionar tarifas del sistema - Combustible y cargos de gestión")
 public class TarifaController {
 
+    private static final Logger logger = LoggerFactory.getLogger(TarifaController.class);
+
     @Autowired
     private PrecioCombustibleService combustibleService;
     @Autowired
     private CargoGestionService cargoGestionService;
+
+    // --- Endpoints de Precio Combustible ---
 
     @Operation(
         summary = "Establecer nuevo precio de combustible",
@@ -55,7 +63,11 @@ public class TarifaController {
     @PostMapping("/combustible")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PrecioCombustibleDto> setPrecioCombustible(@Valid @RequestBody PrecioCombustibleDto dto) {
+        logger.info("POST /api/tarifas/combustible: Intentando establecer nuevo precio de combustible con valor: {}", dto.getPrecioPorLitro());
+        
         PrecioCombustibleDto newPrice = combustibleService.guardarNuevoPrecio(dto);
+        
+        logger.info("Nuevo precio de combustible establecido con ID: {}", newPrice.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(newPrice);
     }
 
@@ -78,10 +90,20 @@ public class TarifaController {
     })
     @GetMapping("/combustible")
     public ResponseEntity<PrecioCombustibleDto> getPrecioCombustibleActual() {
-        return combustibleService.buscarPrecioVigente()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        logger.debug("GET /api/tarifas/combustible: Buscando precio de combustible vigente.");
+
+        Optional<PrecioCombustibleDto> precioVigente = combustibleService.buscarPrecioVigente();
+
+        if (precioVigente.isPresent()) {
+            logger.info("Precio de combustible vigente encontrado.");
+            return ResponseEntity.ok(precioVigente.get());
+        } else {
+            logger.warn("No se encontró precio de combustible vigente.");
+            return ResponseEntity.notFound().build();
+        }
     }
+
+    // --- Endpoints de Cargo de Gestión ---
 
     @Operation(
         summary = "Establecer nuevo cargo de gestión",
@@ -105,7 +127,11 @@ public class TarifaController {
     @PostMapping("/gestion")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CargoGestionDto> setCargoGestion(@Valid @RequestBody CargoGestionDto dto) {
+        logger.info("POST /api/tarifas/gestion: Intentando establecer nuevo cargo de gestión con valor: {}", dto.getCostoPorTramo());
+
         CargoGestionDto newCargo = cargoGestionService.guardarNuevoCargo(dto);
+        
+        logger.info("Nuevo cargo de gestión establecido con ID: {}", newCargo.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(newCargo);
     }
 
@@ -128,8 +154,16 @@ public class TarifaController {
     })
     @GetMapping("/gestion")
     public ResponseEntity<CargoGestionDto> getCargoGestionActual() {
-        return cargoGestionService.buscarCargoVigente()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        logger.debug("GET /api/tarifas/gestion: Buscando cargo de gestión vigente.");
+
+        Optional<CargoGestionDto> cargoVigente = cargoGestionService.buscarCargoVigente();
+
+        if (cargoVigente.isPresent()) {
+            logger.info("Cargo de gestión vigente encontrado.");
+            return ResponseEntity.ok(cargoVigente.get());
+        } else {
+            logger.warn("No se encontró cargo de gestión vigente.");
+            return ResponseEntity.notFound().build();
+        }
     }
 }

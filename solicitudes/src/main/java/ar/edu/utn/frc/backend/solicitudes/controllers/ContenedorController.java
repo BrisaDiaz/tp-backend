@@ -1,7 +1,10 @@
 package ar.edu.utn.frc.backend.solicitudes.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +30,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "bearerAuth")
 public class ContenedorController {
     
+    private static final Logger logger = LoggerFactory.getLogger(ContenedorController.class);
+
     @Autowired
     private ContenedorService contenedorService;
 
@@ -52,7 +57,9 @@ public class ContenedorController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContenedorDto>> obtenerTodosLosContenedores() {
+        logger.info("GET /api/contenedores: Solicitud para obtener todos los contenedores.");
         List<ContenedorDto> contenedores = contenedorService.buscarTodos();
+        logger.info("Se encontraron {} contenedores.", contenedores.size());
         return ResponseEntity.ok(contenedores);
     }
 
@@ -80,9 +87,17 @@ public class ContenedorController {
     public ResponseEntity<ContenedorDto> obtenerContenedorPorId(
             @Parameter(description = "ID del contenedor", example = "1", required = true) 
             @PathVariable Integer id) {
-        return contenedorService.buscarPorId(id)
-                .map(contenedorDto -> ResponseEntity.ok().body(contenedorDto))
-                .orElse(ResponseEntity.notFound().build());
+        logger.info("GET /api/contenedores/{}: Solicitud para obtener contenedor por ID.", id);
+        
+        Optional<ContenedorDto> contenedorDto = contenedorService.buscarPorId(id);
+
+        if (contenedorDto.isPresent()) {
+            logger.debug("Contenedor con ID {} encontrado.", id);
+            return ResponseEntity.ok().body(contenedorDto.get());
+        } else {
+            logger.warn("Contenedor con ID {} no encontrado.", id);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(
@@ -107,7 +122,9 @@ public class ContenedorController {
     @GetMapping("/pendientes-entrega")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContenedorDto>> obtenerContenedoresPendientesDeEntrega() {
+        logger.info("GET /api/contenedores/pendientes-entrega: Solicitud para obtener contenedores pendientes de entrega.");
         List<ContenedorDto> contenedores = contenedorService.buscarContenedoresPendientesDeEntrega();
+        logger.info("Se encontraron {} contenedores pendientes de entrega.", contenedores.size());
         return ResponseEntity.ok(contenedores);
     }
 
@@ -133,7 +150,9 @@ public class ContenedorController {
     @GetMapping("/en-deposito")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContenedorDto>> obtenerContenedoresEnDeposito() {
+        logger.info("GET /api/contenedores/en-deposito: Solicitud para obtener contenedores en depósito.");
         List<ContenedorDto> contenedores = contenedorService.buscarContenedoresEnDeposito();
+        logger.info("Se encontraron {} contenedores en depósito.", contenedores.size());
         return ResponseEntity.ok(contenedores);
     }
 
@@ -159,7 +178,9 @@ public class ContenedorController {
     @GetMapping("/en-viaje")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContenedorDto>> obtenerContenedoresEnViaje() {
+        logger.info("GET /api/contenedores/en-viaje: Solicitud para obtener contenedores en viaje.");
         List<ContenedorDto> contenedores = contenedorService.buscarContenedoresEnViaje();
+        logger.info("Se encontraron {} contenedores en viaje.", contenedores.size());
         return ResponseEntity.ok(contenedores);
     }
 
@@ -189,7 +210,9 @@ public class ContenedorController {
     public ResponseEntity<List<ContenedorDto>> obtenerContenedoresPorEstado(
             @Parameter(description = "Estado del contenedor", example = "En Viaje", required = true) 
             @PathVariable String estado) {
+        logger.info("GET /api/contenedores/estado/{}: Solicitud para obtener contenedores por estado.", estado);
         List<ContenedorDto> contenedores = contenedorService.buscarPorEstado(estado);
+        logger.info("Se encontraron {} contenedores con el estado {}.", contenedores.size(), estado);
         return ResponseEntity.ok(contenedores);
     }
 }

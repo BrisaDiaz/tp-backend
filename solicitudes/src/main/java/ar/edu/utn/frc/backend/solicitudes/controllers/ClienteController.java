@@ -1,7 +1,10 @@
 package ar.edu.utn.frc.backend.solicitudes.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.utn.frc.backend.solicitudes.dto.ClienteDto;
+import ar.edu.utn.frc.backend.solicitudes.dto.SolicitudTransporteDto;
 import ar.edu.utn.frc.backend.solicitudes.services.ClienteService;
+import ar.edu.utn.frc.backend.solicitudes.services.SolicitudTransporteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,8 +38,13 @@ import jakarta.validation.Valid;
 @SecurityRequirement(name = "bearerAuth")
 public class ClienteController {
     
+    private static final Logger logger = LoggerFactory.getLogger(ClienteController.class);
+
     @Autowired
     ClienteService clienteService;
+
+    @Autowired
+    private SolicitudTransporteService solicitudTransporteService;
 
     @Operation(
         summary = "Obtener todos los clientes",
@@ -58,7 +68,9 @@ public class ClienteController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ClienteDto>> buscarTodosLosClientes() {
+        logger.info("GET /api/clientes: Solicitud para buscar todos los clientes.");
         List<ClienteDto> clientes = clienteService.buscarTodos();
+        logger.info("Se encontraron {} clientes.", clientes.size());
         return ResponseEntity.ok(clientes);
     }
 
@@ -83,7 +95,11 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<ClienteDto> guardarCliente(
             @Valid @RequestBody ClienteDto clienteDto) {
+        logger.info("POST /api/clientes: Solicitud para crear un nuevo cliente con DNI: {}", clienteDto.getDni());
+        
         ClienteDto clienteGuardado = clienteService.guardarCliente(clienteDto);
+        
+        logger.info("Cliente creado exitosamente con ID: {}", clienteGuardado.getId());
         return status(HttpStatus.CREATED).body(clienteGuardado);
     }
 
@@ -115,9 +131,17 @@ public class ClienteController {
             @PathVariable Integer id,
             
             @Valid @RequestBody ClienteDto clienteDto) {
-        return clienteService.actualizarCliente(id, clienteDto)
-                .map(clienteActualizado -> ResponseEntity.ok().body(clienteActualizado))
-                .orElse(ResponseEntity.notFound().build());
+        logger.info("PUT /api/clientes/{}: Solicitud para actualizar cliente con ID.", id);
+
+        Optional<ClienteDto> clienteActualizado = clienteService.actualizarCliente(id, clienteDto);
+
+        if (clienteActualizado.isPresent()) {
+            logger.info("Cliente con ID {} actualizado exitosamente.", id);
+            return ResponseEntity.ok().body(clienteActualizado.get());
+        } else {
+            logger.warn("No se pudo encontrar el cliente con ID {} para actualizar.", id);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(
@@ -144,8 +168,52 @@ public class ClienteController {
     public ResponseEntity<ClienteDto> buscarClientePorId(
             @Parameter(description = "ID del cliente", example = "1", required = true) 
             @PathVariable Integer id) {
-        return clienteService.buscarPorId(id)
-                .map(clienteDto -> ResponseEntity.ok().body(clienteDto))
-                .orElse(ResponseEntity.notFound().build());
+        logger.info("GET /api/clientes/{}: Solicitud para buscar cliente por ID.", id);
+
+        Optional<ClienteDto> clienteDto = clienteService.buscarPorId(id);
+
+        if (clienteDto.isPresent()) {
+            logger.debug("Cliente con ID {} encontrado.", id);
+            return ResponseEntity.ok().body(clienteDto.get());
+        } else {
+            logger.warn("Cliente con ID {} no encontrado.", id);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+        @Operation(
+        summary = "Obtener Solicitudes de Transporte por Cliente",
+        description = "Retorna una lista de todas las Solicitudes de Transporte que pertenecen al cliente especificado por su ID.",
+        tags = { "Clientes" },
+        parameters = {
+            @Parameter(name = "id", description = "ID del Cliente", required = true, example = "1")
+        },
+        responses = {
+            @ApiResponse(
+                responseCode = "200", 
+                description = "Solicitudes encontradas exitosamente.",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = SolicitudTransporteDto.class) // Usamos la clase DTO para el esquema
+                )
+            ),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado (aunque el servicio devuelve lista vacía, se documenta el contexto)", content = @Content)
+        }
+    )
+    /**
+     * GET /clientes/{id}/solicitudes
+     * Retorna todas las solicitudes asociadas a un cliente específico.
+     * @param id ID del cliente.
+     * @return Lista de SolicitudTransporteDto.
+     */
+    @GetMapping("/{id}/solicitudes")
+    public ResponseEntity<List<SolicitudTransporteDto>> obtenerSolicitudesPorClienteId(@PathVariable("id") Integer id) {
+        logger.info("Recibida solicitud para obtener todas las Solicitudes de Transporte para Cliente ID: {}", id);
+        
+        List<SolicitudTransporteDto> solicitudes = solicitudTransporteService.buscarPorClienteId(id);
+        
+        // Retornar 200 OK con una lista vacía si no hay solicitudes, que es lo estándar.
+        logger.info("Retornando {} solicitudes para Cliente ID: {}", solicitudes.size(), id);
+        return ResponseEntity.ok(solicitudes);
     }
 }

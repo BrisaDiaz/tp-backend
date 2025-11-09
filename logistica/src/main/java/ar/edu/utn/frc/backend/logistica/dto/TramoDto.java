@@ -1,7 +1,7 @@
 package ar.edu.utn.frc.backend.logistica.dto;
 
-import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -27,6 +27,12 @@ public class TramoDto {
     
     @Schema(description = "Depósito de destino")
     private DepositoDto destino;
+
+    @Schema(description = "Duración estimada del tramo en segundos", example = "15300")
+    private Long tiempoEstimadoSegundos; 
+    
+    @Schema(description = "Duración real del tramo en segundos", example = "16120")
+    private Long tiempoRealSegundos;
     
     @Schema(description = "Costo estimado del tramo", example = "1500.50")
     private BigDecimal costoEstimado;

@@ -1,6 +1,7 @@
 package ar.edu.utn.frc.backend.logistica.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,6 @@ public interface TramoRepository extends JpaRepository<Tramo, Integer> {
 
     @Query("SELECT t FROM Tramo t JOIN t.estado e WHERE t.camion.id = :idCamion AND e.nombre = 'Asignado'")
     List<Tramo> findByCamionAsignado(@Param("idCamion") Integer idCamion);
+
+    Optional<Tramo> findByRutaIdAndNroOrden(Integer rutaId, Integer nroOrden);
 }
