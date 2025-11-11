@@ -118,7 +118,7 @@ services:
       - '8084:8083'
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      GOOGLE_MAPS_API_KEY: 'TU_CLAVE_DE_API_REAL'
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
     depends_on:
       keycloak:
         condition: service_started
