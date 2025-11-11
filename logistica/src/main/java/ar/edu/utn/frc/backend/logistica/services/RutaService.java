@@ -27,7 +27,7 @@ import ar.edu.utn.frc.backend.logistica.entities.Contenedor;
 import ar.edu.utn.frc.backend.logistica.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.entities.Ruta;
 import ar.edu.utn.frc.backend.logistica.entities.SolicitudTransporte;
-import ar.edu.utn.frc.backend.logistica.exceptions.DataConflictException; // Nuevo Importe
+import ar.edu.utn.frc.backend.logistica.exceptions.DataConflictException;
 import ar.edu.utn.frc.backend.logistica.exceptions.RecursoNoDisponibleException;
 import ar.edu.utn.frc.backend.logistica.exceptions.ResourceNotFoundException;
 import ar.edu.utn.frc.backend.logistica.repositories.CamionRepository;
@@ -72,7 +72,7 @@ public class RutaService {
     private static final Logger logger = LoggerFactory.getLogger(RutaController.class);
 
 
-    // Método helper para calcular promedios de BigDecimal - ahora con entidades Camion
+    // Método helper para calcular promedios de BigDecimal
     private BigDecimal calculateAverage(List<Camion> camiones, Function<Camion, BigDecimal> extractor) {
         if (camiones.isEmpty()) {
             logger.warn("calculateAverage: Lista de camiones vacía. Retornando cero.");
@@ -87,6 +87,21 @@ public class RutaService {
 
         return sumaTotal.divide(divisor, SCALE, RoundingMode.HALF_UP);
     }
+
+    private DepositoDto mapDepositoToDto(Deposito deposito) {
+        // Mapeo básico de todas las propiedades
+        DepositoDto dto = modelMapper.map(deposito, DepositoDto.class);
+        
+        if (deposito.getCiudad() != null) {
+            try {
+                dto.setCiudad(deposito.getCiudad().getNombre());
+            } catch (Exception e) {
+                logger.error("Error al mapear el nombre de la ciudad. Verifique la estructura de DepositoDto y Deposito.getCiudad().getNombre().", e);
+            }
+        }
+        return dto;
+    }
+
 
     // Genera rutas tentativas para una solicitud de transporte dada su ID.
     public List<RutaTentativaDto> obtenerTentativas(Integer solicitudId) {
@@ -123,10 +138,9 @@ public class RutaService {
             throw new RecursoNoDisponibleException("No se encontraron depósitos disponibles.");
         }
 
-        // Convertir a DTOs para mantener consistencia con la interfaz
-        List<DepositoDto> depositos = depositosEntities.stream()
-                .map(dep -> modelMapper.map(dep, DepositoDto.class))
-                .collect(Collectors.toList());
+        // Convertir depósitos de Origen y Destino a DTOs (USANDO EL MÉTODO AUXILIAR)
+        DepositoDto depositoOrigen = mapDepositoToDto(solicitud.getDepositoOrigen());
+        DepositoDto depositoDestino = mapDepositoToDto(solicitud.getDepositoDestino());
 
         // 2. OBTENER TARIFAS Y CAMIONES 
         BigDecimal costoCombustiblePorLitro;
@@ -170,16 +184,42 @@ public class RutaService {
         logger.info("Promedios de camiones - Consumo promedio: {} L/km, Costo base promedio: {} $/km", 
                     consumoPromedioCombustible, costoBasePromedioPorKm);
 
-        // 5. PREPARACIÓN DE DATOS
-        DepositoDto depositoOrigen = modelMapper.map(solicitud.getDepositoOrigen(), DepositoDto.class);
-        DepositoDto depositoDestino = modelMapper.map(solicitud.getDepositoDestino(), DepositoDto.class);
-
-        // Eliminar los depósitos de origen y destino de la lista de intermedios
-        List<DepositoDto> depositosIntermedios = depositos.stream()
+        // 5. PREPARACIÓN DE DEPÓSITOS INTERMEDIOS (LÓGICA DE ORDENAMIENTO POR PROXIMIDAD)
+        List<DepositoDto> depositosIntermedios = depositosEntities.stream()
+                // Filtrar los depósitos de origen y destino
                 .filter(dep -> !dep.getId().equals(depositoOrigen.getId())
                         && !dep.getId().equals(depositoDestino.getId()))
+                // Mapear a DTO (USANDO EL MÉTODO AUXILIAR)
+                .map(this::mapDepositoToDto)
                 .collect(Collectors.toList());
 
+        // Ordenar los depósitos intermedios por la suma de distancias euclidianas (heurística de proximidad)
+        // Score = Distancia^2(Origen -> Intermedio) + Distancia^2(Intermedio -> Destino)
+        depositosIntermedios.sort((depA, depB) -> {
+            // Score A
+            double scoreA = calculateEuclideanDistanceSquared(
+                depositoOrigen.getLatitud(), depositoOrigen.getLongitud(), 
+                depA.getLatitud(), depA.getLongitud()) +
+                calculateEuclideanDistanceSquared(
+                depA.getLatitud(), depA.getLongitud(), 
+                depositoDestino.getLatitud(), depositoDestino.getLongitud());
+            
+            // Score B
+            double scoreB = calculateEuclideanDistanceSquared(
+                depositoOrigen.getLatitud(), depositoOrigen.getLongitud(), 
+                depB.getLatitud(), depB.getLongitud()) +
+                calculateEuclideanDistanceSquared(
+                depB.getLatitud(), depB.getLongitud(), 
+                depositoDestino.getLatitud(), depositoDestino.getLongitud());
+            
+            return Double.compare(scoreA, scoreB); // Menor score (más cerca de la ruta directa) primero
+        });
+
+        logger.debug("Depósitos intermedios disponibles y ordenados (ID, Lat, Lon): {}", 
+                depositosIntermedios.stream()
+                    .map(dep -> String.format("%d (%.2f, %.2f)", dep.getId(), dep.getLatitud(), dep.getLongitud()))
+                    .collect(Collectors.toList()));
+        
         logger.debug("Depósitos intermedios disponibles para rutas: {}", depositosIntermedios.size());
 
         // Generar las rutas tentativas (NO se persisten en BD)
@@ -199,7 +239,7 @@ public class RutaService {
     public List<RutaTentativaDto> generarRutasTentativas(
                 DepositoDto depositoOrigen,
                 DepositoDto depositoDestino,
-                List<DepositoDto> depositosIntermedios,
+                List<DepositoDto> depositosIntermedios, // Ya vienen ordenados
                 BigDecimal consumoPromedioCombustible,
                 BigDecimal costoBasePromedioPorKm,
                 BigDecimal costoCombustiblePorLitro,
@@ -221,8 +261,9 @@ public class RutaService {
 
         // Ruta 2: Con 1 depósito intermedio (si hay disponibles)
         if (!depositosIntermedios.isEmpty()) {
-            DepositoDto intermedio = depositosIntermedios.get(0);
-            logger.debug("Generando ruta con 1 intermedio: {} -> {} -> {}", depositoOrigen.getId(), intermedio.getId(), depositoDestino.getId());
+            // Se utiliza el intermedio mejor rankeado (el 1er elemento de la lista ordenada)
+            DepositoDto intermedio = depositosIntermedios.get(0); 
+            logger.debug("Generando ruta con 1 intermedio (Mejor Rankeado): {} -> {} -> {}", depositoOrigen.getId(), intermedio.getId(), depositoDestino.getId());
             RutaTentativaDto rutaConUnIntermedio = generarRutaConUnIntermedio(
                 depositoOrigen, depositoDestino, intermedio,
                 consumoPromedioCombustible, costoBasePromedioPorKm,
@@ -236,9 +277,10 @@ public class RutaService {
 
         // Ruta 3: Con 2 depósitos intermedios (si hay disponibles)
         if (depositosIntermedios.size() >= 2) {
+            // Se utilizan los dos intermedios mejor rankeados (los 2 primeros elementos)
             DepositoDto intermedio1 = depositosIntermedios.get(0);
             DepositoDto intermedio2 = depositosIntermedios.get(1);
-            logger.debug("Generando ruta con 2 intermedios: {} -> {} -> {} -> {}", depositoOrigen.getId(), intermedio1.getId(), intermedio2.getId(), depositoDestino.getId());
+            logger.debug("Generando ruta con 2 intermedios (2 Mejores Rankeados): {} -> {} -> {} -> {}", depositoOrigen.getId(), intermedio1.getId(), intermedio2.getId(), depositoDestino.getId());
             RutaTentativaDto rutaConDosIntermedios = generarRutaConDosIntermedios(
                 depositoOrigen, depositoDestino, 
                 intermedio1, intermedio2,
@@ -421,8 +463,8 @@ public class RutaService {
         // REDONDEAR a 2 decimales para cumplir con la validación @Digits(integer=8, fraction=2)
         BigDecimal costoFinal = costoTotal.setScale(SCALE, RoundingMode.HALF_UP);
         logger.debug("Cálculo Costo Tramo (Distancia: {} km) - Combustible: {}, Base: {}, Gestión: {}, Total: {}", 
-                    distancia, costoCombustibleTramo.setScale(SCALE, RoundingMode.HALF_UP), 
-                    costoBaseTramo.setScale(SCALE, RoundingMode.HALF_UP), cargoGestion, costoFinal);
+                     distancia, costoCombustibleTramo.setScale(SCALE, RoundingMode.HALF_UP), 
+                     costoBaseTramo.setScale(SCALE, RoundingMode.HALF_UP), cargoGestion, costoFinal);
 
         return costoFinal;
     }
@@ -547,5 +589,26 @@ public class RutaService {
         long tiempoCalculado = (long) ((distanciaInfo.getKilometros() / 80.0) * 3600);
         logger.warn("Usando fallback de tiempo (80 km/h) para distancia {} km: {} segundos", distanciaInfo.getKilometros(), tiempoCalculado);
         return tiempoCalculado;
+    }
+    
+    /**
+     * Calcula la distancia Euclidiana al cuadrado (para evitar Math.sqrt) entre dos puntos.
+     * Se usa como heurística simple para clasificar qué depósitos están más cerca de la ruta directa.
+     * @param lat1 Latitud del punto 1
+     * @param lon1 Longitud del punto 1
+     * @param lat2 Latitud del punto 2
+     * @param lon2 Longitud del punto 2
+     * @return Distancia euclidiana al cuadrado.
+     */
+    private double calculateEuclideanDistanceSquared(Float lat1, Float lon1, Float lat2, Float lon2) {
+        // Manejo de nulos si alguna coordenada faltara (aunque no debería)
+        if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
+            return Double.MAX_VALUE;
+        }
+        // Conversión a double para cálculos rápidos
+        double dLat = lat2.doubleValue() - lat1.doubleValue();
+        double dLon = lon2.doubleValue() - lon1.doubleValue();
+        
+        return dLat * dLat + dLon * dLon;
     }
 }
